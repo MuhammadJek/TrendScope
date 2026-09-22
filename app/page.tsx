@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 import {
   ArrowRight,
   BarChart3,
@@ -28,7 +29,9 @@ const features = [
 
 const steps = ["Collect", "Normalize", "Analyze", "Discover"];
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+  const isAuthenticated = !!session?.user;
   const dashboard = getDashboardData();
 
   return (
@@ -72,7 +75,22 @@ export default function Home() {
             <Link href="/rankings" className="hover:text-white">Rankings</Link>
             <Link href="/pricing" className="hover:text-white">Pricing</Link>
           </nav>
-          <Button href="/dashboard" variant="secondary" size="sm">Open app</Button>
+          <div className="flex items-center gap-2">
+            {isAuthenticated ? (
+              <Button href="/dashboard" variant="secondary" size="sm">
+                Open dashboard
+              </Button>
+            ) : (
+              <>
+                <Button href="/login" variant="secondary" size="sm">
+                  Sign in
+                </Button>
+                <Button href="/register" size="sm">
+                  Get started
+                </Button>
+              </>
+            )}
+          </div>
         </header>
         <div className="relative z-10 mx-auto flex min-h-[calc(92vh-5rem)] max-w-7xl flex-col justify-center px-4 pb-20 pt-14 sm:px-6 lg:px-8">
           <div className="max-w-3xl">

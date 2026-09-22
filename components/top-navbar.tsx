@@ -5,8 +5,21 @@ import { useState } from "react";
 import { Menu, Search, X } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Button } from "@/components/ui/button";
+import { UserDropdown } from "@/components/auth/user-dropdown";
 
-export function TopNavbar({ title = "TrendScope" }: { title?: string }) {
+type NavUser = {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+} | null;
+
+export function TopNavbar({
+  title = "TrendScope",
+  user,
+}: {
+  title?: string;
+  user?: NavUser;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -21,8 +34,12 @@ export function TopNavbar({ title = "TrendScope" }: { title?: string }) {
           >
             <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
-          <Link href="/" className="font-semibold text-slate-950 dark:text-slate-50 lg:hidden">TrendScope</Link>
-          <p className="hidden text-sm font-semibold text-slate-700 dark:text-slate-300 lg:block">{title}</p>
+          <Link href="/" className="font-semibold text-slate-950 dark:text-slate-50 lg:hidden">
+            TrendScope
+          </Link>
+          <p className="hidden text-sm font-semibold text-slate-700 dark:text-slate-300 lg:block">
+            {title}
+          </p>
         </div>
         <div className="hidden min-w-0 flex-1 justify-center md:flex">
           <Link
@@ -34,15 +51,29 @@ export function TopNavbar({ title = "TrendScope" }: { title?: string }) {
           </Link>
         </div>
         <div className="flex items-center gap-2">
-          <Button href="/products" variant="secondary" size="sm">Explore</Button>
-          <Button href="/dashboard" size="sm">Dashboard</Button>
+          {user ? (
+            <UserDropdown user={user} />
+          ) : (
+            <>
+              <Button href="/login" variant="secondary" size="sm">
+                Sign in
+              </Button>
+              <Button href="/register" size="sm">
+                Get started
+              </Button>
+            </>
+          )}
         </div>
       </div>
       {open ? (
         <div className="fixed inset-0 z-50 bg-slate-950/40 lg:hidden" role="dialog" aria-modal="true">
           <div className="h-full w-80 max-w-[86vw] bg-white shadow-xl dark:bg-slate-950">
             <div className="flex justify-end p-3">
-              <button className="rounded-xl p-2 hover:bg-slate-100 dark:hover:bg-slate-900" onClick={() => setOpen(false)} aria-label="Close navigation">
+              <button
+                className="rounded-xl p-2 hover:bg-slate-100 dark:hover:bg-slate-900"
+                onClick={() => setOpen(false)}
+                aria-label="Close navigation"
+              >
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
