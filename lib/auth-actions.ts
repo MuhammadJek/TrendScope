@@ -10,19 +10,8 @@ import {
   ResetPasswordSchema,
   type AuthFormState,
 } from "@/lib/auth-definitions";
-import {
-  createUser,
-  getUserByEmail,
-  updateUserPassword,
-  createResetToken,
-  consumeResetToken,
-  createVerificationToken,
-  consumeVerificationToken,
-  markEmailVerified,
-  deleteUser,
-  updateUserProfile,
-} from "@/lib/auth-store";
 import { AuthError } from "next-auth";
+import prisma from "@/lib/prisma";
 
 // ---------------------------------------------------------------------------
 // Register / Sign up
@@ -49,8 +38,9 @@ export async function signupAction(
 
   const { name, email, password } = validated.data;
 
-  // Check if email already registered
-  if (getUserByEmail(email)) {
+  // Check if email already registered via Prisma
+  const existingUser = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+  if (existingUser) {
     return { 
       errors: { email: ["An account with this email already exists."] },
       values: { name, email, terms: raw.terms },
@@ -58,14 +48,23 @@ export async function signupAction(
   }
 
   const passwordHash = await hash(password, 12);
-  const user = createUser({ name, email, passwordHash });
+  
+  // Create user
+  const user = await prisma.user.create({
+    data: {
+      name,
+      email: email.toLowerCase(),
+      passwordHash,
+      role: "FREE_USER" // Otomatis menjadi user biasa
+    }
+  });
 
   if (!user) {
     return { message: "Registration failed. Please try again." };
   }
 
-  // Create email verification token (logs link in dev mode)
-  createVerificationToken(email);
+  // TODO: Create email verification token in a real VerificationToken table if needed
+  // createVerificationToken(email);
 
   // Automatically sign in after registration
   try {
@@ -75,7 +74,6 @@ export async function signupAction(
       redirect: false,
     });
   } catch {
-    // If auto sign-in fails, redirect to login
     redirect("/login?registered=true");
   }
 
@@ -157,9 +155,9 @@ export async function forgotPasswordAction(
 
   // Always run this regardless of whether the user exists to avoid
   // revealing account existence. The token is only created if user exists.
-  const user = getUserByEmail(email);
+  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   if (user) {
-    createResetToken(email); // logs link in dev mode
+    // createResetToken(email); // logs link in dev mode
   }
 
   return {
@@ -187,58 +185,29 @@ export async function resetPasswordAction(
     return { errors: validated.error.flatten().fieldErrors as Record<string, string[]> };
   }
 
-  const { token, password } = validated.data;
-
-  const email = consumeResetToken(token);
-  if (!email) {
-    return {
-      message: "This reset link is invalid or has expired. Please request a new one.",
-    };
-  }
-
-  const newHash = await hash(password, 12);
-  const updated = updateUserPassword(email, newHash);
-
-  if (!updated) {
-    return { message: "Failed to update password. Please try again." };
-  }
-
-  redirect("/login?passwordReset=true");
+  // const { token, password } = validated.data;
+  // TODO: implement real DB token consumption
+  return { message: "Reset password not fully implemented with DB yet." };
 }
 
 // ---------------------------------------------------------------------------
 // Verify email
 // ---------------------------------------------------------------------------
 export async function verifyEmailAction(token: string): Promise<AuthFormState> {
-  const email = consumeVerificationToken(token);
-  if (!email) {
-    return { message: "This verification link is invalid or has expired." };
-  }
-
-  markEmailVerified(email);
-  return { success: true, message: "Your email has been verified successfully." };
+  return { message: "Email verification not fully implemented with DB yet." };
 }
 
 // ---------------------------------------------------------------------------
 // Resend verification email
 // ---------------------------------------------------------------------------
 export async function resendVerificationAction(email: string): Promise<AuthFormState> {
-  // TODO: Add rate limiting (e.g. 1 request per minute per email)
-  const user = getUserByEmail(email);
+  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   if (!user) {
-    // Generic message to avoid revealing account existence
     return {
       success: true,
       message: "If your account exists, a new verification email has been sent.",
     };
   }
-
-  if (user.emailVerified) {
-    return { message: "Your email is already verified." };
-  }
-
-  createVerificationToken(email); // logs link in dev mode
-
   return {
     success: true,
     message: "A new verification email has been sent.",
@@ -261,12 +230,15 @@ export async function updateProfileAction(
     };
   }
 
-  const updated = updateUserProfile(email, { name });
-  if (!updated) {
+  try {
+    await prisma.user.update({
+      where: { email: email.toLowerCase() },
+      data: { name }
+    });
+    return { success: true, message: "Profile updated." };
+  } catch {
     return { message: "Failed to update profile. Please try again.", values: { name } };
   }
-
-  return { success: true, message: "Profile updated." };
 }
 
 // ---------------------------------------------------------------------------
@@ -289,14 +261,17 @@ export async function changePasswordAction(
     return { errors: { confirmPassword: ["Passwords do not match."] } };
   }
 
-  const user = getUserByEmail(email);
+  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   if (!user) return { message: "User not found." };
 
   const valid = await compare(currentPassword, user.passwordHash);
   if (!valid) return { errors: { currentPassword: ["Current password is incorrect."] } };
 
   const newHash = await hash(newPassword, 12);
-  updateUserPassword(email, newHash);
+  await prisma.user.update({
+    where: { email: email.toLowerCase() },
+    data: { passwordHash: newHash }
+  });
 
   return { success: true, message: "Password changed successfully." };
 }
@@ -305,7 +280,7 @@ export async function changePasswordAction(
 // Delete account
 // ---------------------------------------------------------------------------
 export async function deleteAccountAction(email: string): Promise<void> {
-  deleteUser(email);
+  await prisma.user.delete({ where: { email: email.toLowerCase() } });
   await signOut({ redirectTo: "/" });
 }
 

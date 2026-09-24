@@ -1,8 +1,8 @@
-export type Platform = "Digital Marketplace" | "E-Commerce" | "TikTok";
+export type Platform = "Digital Marketplace" | "E-Commerce" | "TikTok" | "Envato";
 
-export type DataStatus = "Observed" | "Estimated" | "Unavailable" | "Demo";
+export type DataStatus = "Observed" | "Estimated" | "Unavailable" | "Demo" | "Available";
 
-export type MetricType = "Rank" | "Price" | "Engagement" | "Freshness";
+export type MetricType = "Rank" | "Price" | "Engagement" | "Freshness" | "Sales";
 
 export type Product = {
   slug: string;

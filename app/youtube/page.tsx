@@ -1,8 +1,8 @@
-import { AppFrame } from "@/components/app-frame";
+﻿import { AppFrame } from "@/components/app-frame";
 import { YouTubeSearchClient } from "./youtube-search-client";
 
 export const metadata = {
-  title: "YouTube Insights � TrendScope",
+  title: "YouTube Insights — TrendScope",
   description: "Cari video YouTube terkait kata kunci bisnis Anda.",
 };
 

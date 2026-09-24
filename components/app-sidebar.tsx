@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Compass, Home, LineChart, PackageSearch, Settings, Trophy, User } from "lucide-react";
+import { BarChart3, Compass, Home, LineChart, PackageSearch, Settings, Trophy, User, Search, PlaySquare } from "lucide-react";
 import { UserAvatar } from "@/components/auth/user-avatar";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
+  { href: "/research", label: "Trend Research", icon: Search },
+  { href: "/youtube", label: "YouTube Insights", icon: PlaySquare },
   { href: "/products", label: "Products", icon: PackageSearch },
   { href: "/rankings", label: "Rankings", icon: Trophy },
   { href: "/trends", label: "Trends", icon: LineChart },
@@ -21,6 +23,7 @@ type SidebarUser = {
   name?: string | null;
   email?: string | null;
   image?: string | null;
+  role?: string | null;
 } | null;
 
 export function AppSidebar({
@@ -72,6 +75,7 @@ export function AppSidebar({
               </Link>
             );
           })}
+
         </nav>
 
         {/* User footer */}

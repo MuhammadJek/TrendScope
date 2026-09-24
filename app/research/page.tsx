@@ -1,8 +1,8 @@
-import { AppFrame } from "@/components/app-frame";
+﻿import { AppFrame } from "@/components/app-frame";
 import { TrendSearchClient } from "./trend-search-client";
 
 export const metadata = {
-  title: "Trend Research � TrendScope",
+  title: "Trend Research — TrendScope",
   description: "Riset tren topik menggunakan data Wikipedia Pageviews.",
 };
 

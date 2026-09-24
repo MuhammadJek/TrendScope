@@ -10,7 +10,7 @@ export default async function RankingsPage({ searchParams }: PageProps<"/ranking
   const params = await searchParams;
   const platform = typeof params.platform === "string" ? params.platform : "all";
   const category = typeof params.category === "string" ? params.category : "all";
-  const products = getRankedProducts(platform, category);
+  const products = await getRankedProducts(platform, category);
 
   return (
     <AppFrame title="Rankings">

@@ -16,7 +16,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const params = await searchParams;
   const platform = typeof params.platform === "string" ? params.platform : "all";
   const range = typeof params.range === "string" ? params.range : "30d";
-  const dashboard = getDashboardData(platform);
+  const dashboard = await getDashboardData(platform);
 
   return (
     <AppFrame title="Analytics Dashboard">

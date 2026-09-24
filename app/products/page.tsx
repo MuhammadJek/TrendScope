@@ -25,7 +25,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
     page: stringParam(params.page),
     view: stringParam(params.view),
   };
-  const result = filterProducts(filters);
+  const result = await filterProducts(filters);
   const view = filters.view === "table" ? "table" : "grid";
 
   return (

@@ -32,7 +32,7 @@ const steps = ["Collect", "Normalize", "Analyze", "Discover"];
 export default async function Home() {
   const session = await auth();
   const isAuthenticated = !!session?.user;
-  const dashboard = getDashboardData();
+  const dashboard = await getDashboardData();
 
   return (
     <main className="bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-50">

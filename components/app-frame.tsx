@@ -10,6 +10,7 @@ export async function AppFrame({ children, title }: { children: ReactNode; title
         name: session.user.name,
         email: session.user.email,
         image: session.user.image,
+        role: (session.user as any).role,
       }
     : null;
 

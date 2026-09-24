@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// -----------------------------------------------------------------------------
+// USER & AUTH (Replacing mock-store for relationships)
+// -----------------------------------------------------------------------------
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          String    @default("USER") // "USER" | "ADMIN"
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  trackedEntities TrackedEntity[]
+  shopifyStores   ShopifyStore[]
+}
+
+// -----------------------------------------------------------------------------
+// API CONNECTIONS
+// -----------------------------------------------------------------------------
+model ApiConnection {
+  id                    String    @id @default(cuid())
+  provider              String    @unique // GOOGLE_ADS, DATAFORSEO_TRENDS, etc.
+  name                  String
+  status                String    // NOT_CONFIGURED, CONNECTED, ERROR, RATE_LIMITED, etc.
+  encryptedCredentials  String    @db.Text
+  metadata              Json?
+  lastTestedAt          DateTime?
+  lastSuccessAt         DateTime?
+  lastErrorAt           DateTime?
+  lastErrorMessage      String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// TRACKED ENTITIES (User specific tracking)
+// -----------------------------------------------------------------------------
+model TrackedEntity {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String   // KEYWORD, PRODUCT, COMPETITOR, DOMAIN, ASIN
+  externalId String
+  source     String   // GOOGLE_ADS, DATAFORSEO_TRENDS, AMAZON, etc.
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, externalId, source])
+}
+
+// -----------------------------------------------------------------------------
+// NORMALIZED TREND DATA
+// -----------------------------------------------------------------------------
+model TrendSnapshot {
+  id         String   @id @default(cuid())
+  keywordId  String   // e.g., "running shoes"
+  source     String
+  date       DateTime @db.Date
+  value      Float
+  location   String?
+  region     String?
+  createdAt  DateTime @default(now())
+
+  @@index([keywordId, source, date])
+}
+
+model KeywordMetric {
+  id            String   @id @default(cuid())
+  keyword       String
+  location      String?
+  language      String?
+  searchVolume  Int?
+  competition   String?  // HIGH, MEDIUM, LOW
+  cpc           Float?
+  source        String
+  period        String?
+  collectedAt   DateTime @default(now())
+  expiresAt     DateTime
+
+  @@index([keyword, location, language, source])
+}
+
+// -----------------------------------------------------------------------------
+// AMAZON DATA
+// -----------------------------------------------------------------------------
+model AmazonProduct {
+  id          String   @id @default(cuid())
+  asin        String   @unique
+  title       String
+  url         String?
+  category    String?
+  imageUrl    String?
+  price       Float?
+  rating      Float?
+  reviewCount Int?
+  source      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  metrics     AmazonProductMetric[]
+}
+
+model AmazonProductMetric {
+  id            String   @id @default(cuid())
+  productId     String
+  rank          Int?
+  keyword       String?
+  keywordRank   Int?
+  searchVolume  Int?
+  reviewCount   Int?
+  price         Float?
+  collectedAt   DateTime @default(now())
+
+  product       AmazonProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// SHOPIFY DATA
+// -----------------------------------------------------------------------------
+model ShopifyStore {
+  id                   String   @id @default(cuid())
+  userId               String
+  shopDomain           String   @unique
+  status               String
+  accessTokenEncrypted String   @db.Text
+  scopes               String
+  installedAt          DateTime @default(now())
+  lastSyncAt           DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products             ShopifyProduct[]
+  salesSnapshots       ShopifySalesSnapshot[]
+}
+
+model ShopifyProduct {
+  id          String   @id @default(cuid())
+  storeId     String
+  externalId  String
+  title       String
+  handle      String
+  price       Float?
+  inventory   Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  store       ShopifyStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  
+  @@unique([storeId, externalId])
+}
+
+model ShopifySalesSnapshot {
+  id          String   @id @default(cuid())
+  storeId     String
+  date        DateTime @db.Date
+  orders      Int
+  revenue     Float
+  unitsSold   Int
+  createdAt   DateTime @default(now())
+
+  store       ShopifyStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// SYSTEM LOGS
+// -----------------------------------------------------------------------------
+model ApiUsageLog {
+  id            String   @id @default(cuid())
+  provider      String
+  endpoint      String
+  statusCode    Int
+  latencyMs     Int
+  success       Boolean
+  estimatedCost Float?
+  errorCode     String?
+  requestId     String?
+  createdAt     DateTime @default(now())
+
+  @@index([provider, createdAt])
+}
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  action      String   // CREDENTIAL_ADDED, PROVIDER_CONNECTED, etc.
+  provider    String?
+  details     String?  @db.Text
+  adminId     String?  // The super admin executing the action
+  createdAt   DateTime @default(now())
+}
+

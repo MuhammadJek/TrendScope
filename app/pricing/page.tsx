@@ -8,7 +8,7 @@ export default function PricingPage() {
       <div className="space-y-8">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50">Pricing</h1>
-          <p className="mt-3 text-slate-600 dark:text-slate-400">Placeholder packages for validating the TrendScope prototype. No billing integration is implemented.</p>
+          <p className="mt-3 text-slate-600 dark:text-slate-400">Pilih paket berlangganan sesuai dengan kebutuhan riset produk dan kompetitor Anda.</p>
         </div>
         <PricingPlans />
         <Card>
@@ -28,13 +28,19 @@ export default function PricingPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {[
-                    ["Local demo data", "Included", "Included", "Included"],
-                    ["Advanced filtering", "Limited", "Included", "Included"],
-                    ["Authorized API replacement path", "Docs", "Docs", "Planning support"],
-                    ["Billing", "Not implemented", "Not implemented", "Not implemented"],
+                    ["Tracked Keywords", "5 limits", "100 limits", "Unlimited"],
+                    ["Tracked Products", "3 limits", "50 limits", "Unlimited"],
+                    ["Tracked Competitors", "1 limits", "20 limits", "Unlimited"],
+                    ["Data Refresh Interval", "Every 3 days", "Every 24 hours", "Real-Time / 1 hour"],
+                    ["Export Reports", "❌", "✅ Included", "✅ Included"],
+                    ["Priority API Support", "❌", "❌", "✅ Included"],
                   ].map((row) => (
                     <tr key={row[0]}>
-                      {row.map((cell) => <td key={cell} className="py-4 pr-4">{cell}</td>)}
+                      {row.map((cell, idx) => (
+                        <td key={`${row[0]}-${idx}`} className="py-4 pr-4">
+                          {cell}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>

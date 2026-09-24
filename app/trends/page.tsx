@@ -13,8 +13,9 @@ export default async function TrendsPage({ searchParams }: PageProps<"/trends">)
   const platform = typeof params.platform === "string" ? params.platform : "all";
   const category = typeof params.category === "string" ? params.category : "all";
   const range = typeof params.range === "string" ? params.range : "30d";
-  const dashboard = getDashboardData(platform);
-  const products = getRankedProducts(platform, category).slice(0, 3);
+  const dashboard = await getDashboardData(platform);
+  const ranked = await getRankedProducts(platform, category);
+  const products = ranked.slice(0, 3);
 
   return (
     <AppFrame title="Trends">

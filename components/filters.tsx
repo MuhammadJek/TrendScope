@@ -2,13 +2,14 @@ import { SlidersHorizontal } from "lucide-react";
 import { getCategories, getPlatforms } from "@/lib/services";
 import { Select } from "@/components/ui/select";
 
-export function PlatformFilter({ defaultValue = "all" }: { defaultValue?: string }) {
+export async function PlatformFilter({ defaultValue = "all" }: { defaultValue?: string }) {
+  const platforms = await getPlatforms();
   return (
     <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
       Platform
       <Select name="platform" defaultValue={defaultValue}>
         <option value="all">All platforms</option>
-        {getPlatforms().map((platform) => (
+        {platforms.map((platform) => (
           <option key={platform} value={platform}>{platform}</option>
         ))}
       </Select>
@@ -16,13 +17,14 @@ export function PlatformFilter({ defaultValue = "all" }: { defaultValue?: string
   );
 }
 
-export function CategoryFilter({ defaultValue = "all" }: { defaultValue?: string }) {
+export async function CategoryFilter({ defaultValue = "all" }: { defaultValue?: string }) {
+  const categories = await getCategories();
   return (
     <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
       Category
       <Select name="category" defaultValue={defaultValue}>
         <option value="all">All categories</option>
-        {getCategories().map((category) => (
+        {categories.map((category) => (
           <option key={category} value={category}>{category}</option>
         ))}
       </Select>

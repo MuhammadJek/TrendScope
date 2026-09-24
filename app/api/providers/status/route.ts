@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getAuthedUserAndWorkspace } from "@/lib/workspace";
 import { YouTubeProvider } from "@/lib/providers/youtube-provider";
 import prisma from "@/lib/prisma";
@@ -6,16 +6,10 @@ import prisma from "@/lib/prisma";
 export async function GET(req: Request) {
   try {
     const { user } = await getAuthedUserAndWorkspace();
-    
-    // Check if superadmin for seeing real credentials status
-    // For now, anyone authenticated can see basic status
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const statuses = [];
-
-    // 1. YouTube Status (from ENV)
     const ytKey = process.env.YOUTUBE_API_KEY;
     if (ytKey) {
       const ytProvider = new YouTubeProvider(ytKey);
@@ -34,20 +28,15 @@ export async function GET(req: Request) {
         message: "Missing YOUTUBE_API_KEY in .env"
       });
     }
-
-    // 2. Wikipedia Status (No API Key needed)
     statuses.push({
       id: "WIKIPEDIA",
       name: "Wikimedia REST API",
       status: "CONNECTED",
       message: "Public access OK"
     });
-
-    // 3. Database stored connections (Envato, Google Ads, DataForSEO)
     const dbConnections = await prisma.apiConnection.findMany({
       select: { id: true, name: true, status: true, lastErrorMessage: true }
     });
-
     for (const conn of dbConnections) {
       statuses.push({
         id: conn.id,
@@ -56,7 +45,6 @@ export async function GET(req: Request) {
         message: conn.lastErrorMessage || "OK"
       });
     }
-
     return NextResponse.json({ statuses });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

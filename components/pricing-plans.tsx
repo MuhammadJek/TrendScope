@@ -8,23 +8,38 @@ const plans = [
     name: "Free",
     monthly: "$0",
     yearly: "$0",
-    description: "Prototype exploration for small teams.",
-    features: ["Demo product explorer", "Basic trend charts", "Source status labels"],
+    description: "Untuk eksplorasi dasar dan tim kecil.",
+    features: [
+      "5 Tracked Keywords", 
+      "3 Tracked Products", 
+      "1 Competitor",
+      "Pembaruan data setiap 3 hari"
+    ],
   },
   {
     name: "Pro",
     monthly: "$49",
     yearly: "$39",
-    description: "Validation workspace for product teams.",
-    features: ["Advanced filters", "Ranking methodology panels", "Export-ready source notes"],
+    description: "Akses riset tanpa batas untuk profesional.",
+    features: [
+      "100 Tracked Keywords", 
+      "50 Tracked Products", 
+      "20 Competitors",
+      "Pembaruan data setiap hari"
+    ],
     featured: true,
   },
   {
     name: "Business",
     monthly: "$149",
     yearly: "$119",
-    description: "Placeholder plan for authorized integrations.",
-    features: ["API integration planning", "Team source preferences", "Priority onboarding"],
+    description: "Skala perusahaan dengan dukungan prioritas.",
+    features: [
+      "Tracked Keywords Tanpa Batas", 
+      "Tracked Products Tanpa Batas", 
+      "API Integration & Shopify Connect",
+      "Pembaruan Real-Time"
+    ],
   },
 ];
 

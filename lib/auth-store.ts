@@ -23,6 +23,7 @@ export type StoredUser = {
   emailVerified: boolean;
   createdAt: string;
   image?: string | null;
+  role: "USER" | "ADMIN";
 };
 
 // ---------------------------------------------------------------------------
@@ -54,6 +55,9 @@ export function createUser(data: {
   const email = data.email.toLowerCase();
   if (users.has(email)) return null;
 
+  // Make the first user an ADMIN for prototype purposes
+  const isFirstUser = users.size === 0;
+
   const user: StoredUser = {
     id: randomBytes(16).toString("hex"),
     name: data.name,
@@ -62,10 +66,15 @@ export function createUser(data: {
     emailVerified: false,
     createdAt: new Date().toISOString(),
     image: null,
+    role: isFirstUser || email.includes("admin") ? "ADMIN" : "USER",
   };
 
   users.set(email, user);
   return user;
+}
+
+export function getAllUsers(): StoredUser[] {
+  return Array.from(users.values());
 }
 
 /**

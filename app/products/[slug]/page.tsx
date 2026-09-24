@@ -12,19 +12,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getProductBySlug, getProductTrend, getProducts, getRelatedProducts } from "@/lib/services";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 
-export function generateStaticParams() {
-  return getProducts().map((product) => ({ slug: product.slug }));
+export async function generateStaticParams() {
+  const products = await getProducts();
+  return products.map((product) => ({ slug: product.slug }));
 }
 
 export default async function ProductDetailPage({ params }: PageProps<"/products/[slug]">) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();
   }
 
-  const related = getRelatedProducts(product);
+  const related = await getRelatedProducts(product);
   const history = getProductTrend(product);
 
   return (
