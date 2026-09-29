@@ -50,49 +50,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user, trigger, session }) {
-      // 1. Saat pertama kali login (user object ada)
       if (user) {
+        // user is defined only on initial sign-in
         const su = user as unknown as SessionUser;
         token.id = su.id;
         token.emailVerified = su.emailVerified ?? false;
         token.createdAt = su.createdAt ?? new Date().toISOString();
         token.role = su.role ?? "USER";
-        return token;
       }
-
-      // 2. Pada request selanjutnya, cek apakah user masih ada di DB
-      if (token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: token.email },
-          select: { id: true, role: true, emailVerified: true },
-        });
-
-        // Jika user tidak ditemukan di database (sudah dihapus)
-        if (!dbUser) {
-          token.isDeleted = true;
-          return token;
-        }
-
-        // Jika masih ada, update role dan status verifikasi (berjaga-jaga jika diubah admin)
-        token.role = dbUser.role;
-        token.emailVerified = dbUser.emailVerified;
-      }
-
       return token;
     },
     async session({ session, token }) {
-      // Jika user sudah ditandai terhapus di JWT, kosongkan session
-      if (token.isDeleted) {
-        // Return session kosong akan membuat user dianggap tidak login
-        return {} as any;
-      }
-
       if (token && session.user) {
         const sessionUser = session.user as unknown as SessionUser;
         sessionUser.id = token.id as string;
         sessionUser.emailVerified = token.emailVerified as boolean;
         sessionUser.createdAt = token.createdAt as string;
-        sessionUser.role = (token.role as "USER" | "ADMIN" | "SUPER_ADMIN" | "PRO_USER" | "FREE_USER") ?? "USER";
+        sessionUser.role = (token.role as "USER" | "ADMIN") ?? "USER";
       }
       return session;
     },
