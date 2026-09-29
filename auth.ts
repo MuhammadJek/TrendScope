@@ -33,7 +33,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id: user.id,
           name: user.name,
           email: user.email,
-          // Ignoring emailVerified type mismatch
           emailVerified: user.emailVerified as any,
           createdAt: user.createdAt.toISOString(),
           image: user.image ?? null,
@@ -49,9 +48,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user }) {
       if (user) {
-        // user is defined only on initial sign-in
         const su = user as unknown as SessionUser;
         token.id = su.id;
         token.emailVerified = su.emailVerified ?? false;
@@ -66,7 +64,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         sessionUser.id = token.id as string;
         sessionUser.emailVerified = token.emailVerified as boolean;
         sessionUser.createdAt = token.createdAt as string;
-        sessionUser.role = (token.role as "USER" | "ADMIN") ?? "USER";
+        sessionUser.role = (token.role as "USER" | "ADMIN" | "SUPER_ADMIN" | "PRO_USER" | "FREE_USER") ?? "USER";
       }
       return session;
     },
@@ -75,6 +73,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
     error: "/login",
   },
-  // Auth.js v5 handles CSRF automatically via the JWT strategy
   trustHost: true,
 });
