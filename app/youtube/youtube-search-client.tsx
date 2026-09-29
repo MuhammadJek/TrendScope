@@ -251,7 +251,7 @@ export function YouTubeSearchClient() {
                 <p className="mt-1 max-w-[200px] text-xs text-slate-500">
                   Akun gratis hanya dapat melihat 3 video teratas. Upgrade ke Pro untuk melihat 20+ video per pencarian.
                 </p>
-                <Button variant="outline" size="sm" className="mt-4" onClick={(e) => { e.preventDefault(); window.location.href = "/pricing"; }}>
+                <Button variant="secondary" size="sm" className="mt-4" onClick={(e) => { e.preventDefault(); window.location.href = "/pricing"; }}>
                   Upgrade Akun
                 </Button>
               </div>

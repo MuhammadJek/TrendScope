@@ -22,8 +22,9 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  trackedEntities TrackedEntity[]
-  shopifyStores   ShopifyStore[]
+  trackedEntities  TrackedEntity[]
+  shopifyStores    ShopifyStore[]
+  workspaceMembers WorkspaceMember[]
 }
 
 // -----------------------------------------------------------------------------
@@ -39,6 +40,74 @@ model EmailVerificationToken {
   @@index([email])
 }
 
+// -----------------------------------------------------------------------------
+// WORKSPACE (Multi-tenant isolation)
+// -----------------------------------------------------------------------------
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members       WorkspaceMember[]
+  savedSearches SavedSearch[]
+  videoInsights VideoInsight[]
+}
+
+model WorkspaceMember {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        String   @default("MEMBER") // OWNER, ADMIN, MEMBER
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+}
+
+// -----------------------------------------------------------------------------
+// RESEARCH CACHE (SavedSearch + VideoInsight)
+// -----------------------------------------------------------------------------
+model SavedSearch {
+  id          String   @id @default(cuid())
+  workspaceId String
+  keyword     String
+  language    String?
+  country     String?
+  provider    String   // WIKIPEDIA, YOUTUBE, GOOGLE_ADS, etc.
+  resultCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, keyword])
+}
+
+model VideoInsight {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  keyword      String
+  videoId      String
+  title        String
+  channelTitle String
+  channelId    String?
+  publishedAt  DateTime
+  viewCount    BigInt?
+  likeCount    BigInt?
+  commentCount BigInt?
+  duration     String?
+  videoUrl     String
+  fetchedAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, keyword, videoId])
+  @@index([workspaceId, keyword])
+}
 
 // -----------------------------------------------------------------------------
 // API CONNECTIONS
