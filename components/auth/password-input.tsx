@@ -31,9 +31,14 @@ export function PasswordInput({ className, error, id, ...props }: PasswordInputP
       />
       <button
         type="button"
-        onClick={() => setVisible((v) => !v)}
-        className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-        aria-label={visible ? "Hide password" : "Show password"}
+        tabIndex={-1}
+        onMouseDown={(e) => {
+          // Prevent losing focus on the input field
+          e.preventDefault();
+          setVisible((v) => !v);
+        }}
+        className="absolute inset-y-0 right-0 flex items-center justify-center w-11 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 focus:outline-none"
+        aria-label={visible ? "Sembunyikan password" : "Tampilkan password"}
       >
         {visible ? (
           <EyeOff className="h-4 w-4" aria-hidden="true" />
@@ -44,4 +49,3 @@ export function PasswordInput({ className, error, id, ...props }: PasswordInputP
     </div>
   );
 }
-

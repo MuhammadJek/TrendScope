@@ -28,6 +28,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
   const passwordReset = params.passwordReset === "true";
   const registered = params.registered === "true";
+  const emailVerified = params.emailVerified === "true";
 
   return (
     <AuthLayout
@@ -54,6 +55,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       {registered && (
         <div className="mb-5 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/20 dark:text-teal-400">
           Account created! Sign in to get started.
+        </div>
+      )}
+      {emailVerified && (
+        <div className="mb-5 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/20 dark:text-teal-400">
+          ✅ Email berhasil diverifikasi! Silakan masuk dengan akun Anda.
         </div>
       )}
 

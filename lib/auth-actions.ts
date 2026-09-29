@@ -1,6 +1,7 @@
 "use server";
 
 import { hash, compare } from "bcryptjs";
+import { randomBytes } from "crypto";
 import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/auth";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/lib/auth-definitions";
 import { AuthError } from "next-auth";
 import prisma from "@/lib/prisma";
+import { sendEmail, buildVerificationEmail, APP_URL } from "@/lib/email";
 
 // ---------------------------------------------------------------------------
 // Register / Sign up
@@ -49,35 +51,42 @@ export async function signupAction(
 
   const passwordHash = await hash(password, 12);
   
-  // Create user
-  const user = await prisma.user.create({
+  // Create user with emailVerified = false
+  await prisma.user.create({
     data: {
       name,
       email: email.toLowerCase(),
       passwordHash,
-      role: "FREE_USER" // Otomatis menjadi user biasa
+      role: "FREE_USER",
+      emailVerified: false,
     }
   });
 
-  if (!user) {
-    return { message: "Registration failed. Please try again." };
-  }
+  // Create email verification token (valid 24 hours)
+  await prisma.emailVerificationToken.deleteMany({ where: { email: email.toLowerCase() } });
+  const token = randomBytes(32).toString("hex");
+  await prisma.emailVerificationToken.create({
+    data: {
+      token,
+      email: email.toLowerCase(),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    }
+  });
 
-  // TODO: Create email verification token in a real VerificationToken table if needed
-  // createVerificationToken(email);
-
-  // Automatically sign in after registration
+  // Send verification email
+  const verificationUrl = `${APP_URL}/verify-email?token=${token}&email=${encodeURIComponent(email.toLowerCase())}`;
   try {
-    await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
+    await sendEmail({
+      to: email,
+      subject: "Verifikasi email TrendScope Anda",
+      html: buildVerificationEmail(name, verificationUrl),
     });
-  } catch {
-    redirect("/login?registered=true");
+  } catch (err) {
+    console.error("Failed to send verification email:", err);
+    // Tetap lanjut meski email gagal — user bisa resend nanti
   }
 
-  redirect("/dashboard?welcome=true");
+  redirect(`/verify-email?email=${encodeURIComponent(email.toLowerCase())}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -194,25 +203,79 @@ export async function resetPasswordAction(
 // Verify email
 // ---------------------------------------------------------------------------
 export async function verifyEmailAction(token: string): Promise<AuthFormState> {
-  return { message: "Email verification not fully implemented with DB yet." };
+  if (!token) {
+    return { message: "Verification token is missing." };
+  }
+
+  // Find token in DB
+  const record = await prisma.emailVerificationToken.findUnique({ where: { token } });
+
+  if (!record) {
+    return { message: "This verification link is invalid or has already been used." };
+  }
+
+  if (record.expiresAt < new Date()) {
+    // Delete expired token
+    await prisma.emailVerificationToken.delete({ where: { token } }).catch(() => {});
+    return { message: "This verification link has expired. Please request a new one." };
+  }
+
+  // Mark user as verified
+  const updatedUser = await prisma.user.update({
+    where: { email: record.email },
+    data: { emailVerified: true },
+  }).catch(() => null);
+
+  if (!updatedUser) {
+    return { message: "Account not found. Please register again." };
+  }
+
+  // Consume (delete) the token
+  await prisma.emailVerificationToken.delete({ where: { token } }).catch(() => {});
+
+  return {
+    success: true,
+    message: "Email verified successfully! You can now sign in.",
+  };
 }
 
 // ---------------------------------------------------------------------------
 // Resend verification email
 // ---------------------------------------------------------------------------
 export async function resendVerificationAction(email: string): Promise<AuthFormState> {
+  // Always return success to avoid revealing account existence
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
-  if (!user) {
-    return {
-      success: true,
-      message: "If your account exists, a new verification email has been sent.",
-    };
+
+  if (user && !user.emailVerified) {
+    // Delete old tokens and create a new one
+    await prisma.emailVerificationToken.deleteMany({ where: { email: email.toLowerCase() } });
+    const token = randomBytes(32).toString("hex");
+    await prisma.emailVerificationToken.create({
+      data: {
+        token,
+        email: email.toLowerCase(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      }
+    });
+
+    const verificationUrl = `${APP_URL}/verify-email?token=${token}&email=${encodeURIComponent(email.toLowerCase())}`;
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Link verifikasi baru — TrendScope",
+        html: buildVerificationEmail(user.name, verificationUrl),
+      });
+    } catch (err) {
+      console.error("Failed to resend verification email:", err);
+    }
   }
+
   return {
     success: true,
-    message: "A new verification email has been sent.",
+    message: "Jika akun Anda terdaftar dan belum diverifikasi, link baru telah dikirim.",
   };
 }
+
 
 // ---------------------------------------------------------------------------
 // Update profile
