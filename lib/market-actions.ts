@@ -52,7 +52,7 @@ export async function trackKeywordAction(keyword: string, platform: string) {
       const data = await response.json();
       
       if (data.data && data.data.products && data.data.products.length > 0) {
-        const topProducts = data.data.products.slice(0, 10);
+        const topProducts = data.data.products.slice(0, 50);
         
         let totalPrice = 0;
         let validPriceCount = 0;

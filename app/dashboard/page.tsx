@@ -25,7 +25,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     const marketKeyword = await prisma.marketKeyword.findFirst({
       where: { keyword: keyword.toLowerCase(), platform: "AMAZON" },
       include: {
-        products: { take: 10, orderBy: { historicalSold: "desc" } },
+        products: { take: 50, orderBy: { historicalSold: "desc" } },
         snapshots: { take: 1, orderBy: { date: "desc" } }
       }
     });
