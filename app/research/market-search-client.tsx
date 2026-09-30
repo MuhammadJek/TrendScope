@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, Plus, Loader2, TrendingUp, RefreshCw, ShoppingCart, CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { trackKeywordAction } from "@/lib/market-actions";
 import Link from "next/link";
 
@@ -137,14 +137,14 @@ export function MarketSearchClient({ initialKeywords, activePlatform }: MarketSe
                 </div>
               </CardContent>
               {!isProcessing && (
-                <CardFooter className="pt-0 pb-4">
+                <div className="px-5 pb-5 pt-0">
                   <Button asChild variant="outline" className="w-full justify-between group">
                     <Link href={`/dashboard?platform=${k.platform.toLowerCase()}&keyword=${encodeURIComponent(k.keyword)}`}>
                       Lihat Hasil Analisis
                       <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </Button>
-                </CardFooter>
+                </div>
               )}
             </Card>
           );
