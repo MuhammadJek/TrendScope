@@ -286,3 +286,49 @@ model AdminAuditLog {
   createdAt   DateTime @default(now())
 }
 
+// -----------------------------------------------------------------------------
+// E-COMMERCE MARKET INTELLIGENCE
+// -----------------------------------------------------------------------------
+
+// Mewakili kata kunci yang dicari (Misal: "Baju Lebaran")
+model MarketKeyword {
+  id          String   @id @default(cuid())
+  keyword     String
+  platform    String   // SHOPEE, AMAZON, ENVATO
+  lastUpdated DateTime @default(now())
+  
+  snapshots   MarketSnapshot[]
+  products    MarketProduct[]
+
+  @@unique([keyword, platform])
+}
+
+// Menyimpan tren per hari (Time-Series) untuk membuat Line Chart
+model MarketSnapshot {
+  id               String   @id @default(cuid())
+  keywordId        String
+  date             DateTime @db.Date // 2024-03-15
+  totalSearchVol   Int?     // Estimasi pencarian harian
+  avgPrice         Float    // Rata-rata harga pasar hari ini
+  totalMonthlySold Int      // Total barang terjual dari top 10 produk
+
+  keyword MarketKeyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  @@unique([keywordId, date])
+}
+
+// Menyimpan detail produk teratas sebagai referensi kompetitor
+model MarketProduct {
+  id             String   @id @default(cuid())
+  keywordId      String
+  externalId     String   // ID produk di Shopee/Amazon
+  title          String
+  price          Float
+  historicalSold Int
+  monthlySold    Int
+  url            String?
+  fetchedAt      DateTime @default(now())
+
+  keyword MarketKeyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+}
+
