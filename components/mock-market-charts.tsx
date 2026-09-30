@@ -129,6 +129,7 @@ export function TopCompetitorsTable({ products }: { products?: any[] }) {
             <th className="px-4 py-4 font-medium">Informasi Produk</th>
             <th className="px-4 py-4 font-medium">Harga</th>
             <th className="px-4 py-4 font-medium">Est. Penjualan / Rating</th>
+            <th className="px-4 py-4 font-medium">Data Diambil Pada</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -167,6 +168,9 @@ export function TopCompetitorsTable({ products }: { products?: any[] }) {
                 <div className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700 border border-teal-100 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800">
                   {p.monthlySold > 0 ? `+${p.monthlySold.toLocaleString()} terjual/bln` : `${(p.sold || p.historicalSold).toLocaleString()} rating`}
                 </div>
+              </td>
+              <td className="px-4 py-4 text-xs text-slate-500">
+                {p.fetchedAt ? new Date(p.fetchedAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : "Hari Ini"}
               </td>
             </tr>
           ))}
