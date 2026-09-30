@@ -49,7 +49,7 @@ export function MultiKeywordTrendChart() {
         <div className="text-sm text-slate-500 dark:text-slate-400">
           Showing daily search volume & sales velocity estimates.
         </div>
-        <Button variant="outline" size="sm" onClick={handleExportCSV}>
+        <Button variant="secondary" size="sm" onClick={handleExportCSV}>
           <Download className="mr-2 h-4 w-4" />
           Export CSV
         </Button>

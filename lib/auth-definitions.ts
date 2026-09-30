@@ -75,7 +75,7 @@ export type SessionUser = {
   emailVerified: boolean;
   createdAt: string;
   image?: string | null;
-  role: "USER" | "ADMIN";
+  role: "FREE_USER" | "PRO_USER" | "SUPER_ADMIN";
 };
 
 export type AuthFormState =

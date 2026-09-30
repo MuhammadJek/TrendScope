@@ -54,7 +54,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = su.id;
         token.emailVerified = su.emailVerified ?? false;
         token.createdAt = su.createdAt ?? new Date().toISOString();
-        token.role = su.role ?? "USER";
+        token.role = su.role ?? "FREE_USER";
       }
       return token;
     },
@@ -64,7 +64,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         sessionUser.id = token.id as string;
         sessionUser.emailVerified = token.emailVerified as boolean;
         sessionUser.createdAt = token.createdAt as string;
-        sessionUser.role = (token.role as "USER" | "ADMIN" | "SUPER_ADMIN" | "PRO_USER" | "FREE_USER") ?? "USER";
+        sessionUser.role = (token.role as "FREE_USER" | "PRO_USER" | "SUPER_ADMIN") ?? "FREE_USER";
       }
       return session;
     },

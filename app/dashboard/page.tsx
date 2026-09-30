@@ -13,10 +13,10 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
 
   // Mock Market KPI Data
   const marketKpis = [
-    { label: "Total Keyword Search Vol", value: "85.2K", change: 12.5, isPositive: true },
-    { label: "Avg Competitor Price", value: "Rp 210K", change: -5.2, isPositive: false },
-    { label: "Market Demand Spike", value: "+300%", change: 300, isPositive: true },
-    { label: "Tracked Keywords", value: "2", change: 0, isPositive: true },
+    { label: "Total Keyword Search Vol", value: "85.2K", detail: "+12.5% dari bulan lalu" },
+    { label: "Avg Competitor Price", value: "Rp 210K", detail: "-5.2% dari bulan lalu" },
+    { label: "Market Demand Spike", value: "+300%", detail: "Spike minggu ini" },
+    { label: "Tracked Keywords", value: "2", detail: "Active" },
   ];
   const icons = [Search, Activity, TrendingUp, Activity];
 

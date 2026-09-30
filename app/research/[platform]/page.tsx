@@ -3,25 +3,28 @@ import { MarketSearchClient } from "../market-search-client";
 import { getTrackedKeywords } from "@/lib/market-actions";
 import { redirect } from "next/navigation";
 
-export function generateMetadata({ params }: { params: { platform: string } }) {
-  const platform = params.platform.toUpperCase();
+type Props = {
+  params: Promise<{ platform: string }>;
+};
+
+export async function generateMetadata({ params }: Props) {
+  const resolvedParams = await params;
+  const platform = resolvedParams.platform.toUpperCase();
   return {
     title: `${platform} Analytics - TrendScope`,
     description: `Lacak tren kata kunci produk di ${platform}.`,
   };
 }
 
-export default async function PlatformResearchPage({ params }: { params: { platform: string } }) {
-  const platform = params.platform.toUpperCase();
+export default async function PlatformResearchPage({ params }: Props) {
+  const resolvedParams = await params;
+  const platform = resolvedParams.platform.toUpperCase();
   
   if (!["SHOPEE", "AMAZON", "ENVATO"].includes(platform)) {
     redirect("/research/shopee");
   }
 
   const keywords = await getTrackedKeywords();
-  
-  // Filter keywords purely for this platform server-side or pass them all to client
-  // Passing only relevant keywords is better
   const platformKeywords = keywords.filter(k => k.platform === platform);
 
   return (
@@ -41,3 +44,4 @@ export default async function PlatformResearchPage({ params }: { params: { platf
     </AppFrame>
   );
 }
+

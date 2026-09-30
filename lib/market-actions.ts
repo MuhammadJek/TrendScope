@@ -39,7 +39,7 @@ export async function trackKeywordAction(keyword: string, platform: string) {
 export async function getTrackedKeywords() {
   try {
     const keywords = await prisma.marketKeyword.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: { lastUpdated: "desc" },
     });
     return keywords;
   } catch (error) {
