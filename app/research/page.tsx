@@ -1,25 +1,28 @@
-﻿import { AppFrame } from "@/components/app-frame";
-import { TrendSearchClient } from "./trend-search-client";
+import { AppFrame } from "@/components/app-frame";
+import { MarketSearchClient } from "./market-search-client";
+import { getTrackedKeywords } from "@/lib/market-actions";
 
 export const metadata = {
-  title: "Trend Research — TrendScope",
-  description: "Riset tren topik menggunakan data Wikipedia Pageviews.",
+  title: "Market Keyword Tracker - TrendScope",
+  description: "Lacak tren kata kunci produk di E-Commerce.",
 };
 
-export default function ResearchPage() {
+export default async function ResearchPage() {
+  const keywords = await getTrackedKeywords();
+
   return (
-    <AppFrame title="Trend Research">
+    <AppFrame title="Keyword Tracker">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
-            Trend Research
+            Keyword Tracker
           </h1>
           <p className="mt-2 text-slate-600 dark:text-slate-400">
-            Cari dan analisis tingkat minat publik terhadap topik atau kata kunci menggunakan
-            data Wikipedia Pageviews yang real-time.
+            Masukkan kata kunci atau nama produk. Sistem kami akan secara otomatis melacak pergerakan harga, kompetisi, dan estimasi penjualan di E-Commerce setiap harinya.
           </p>
         </div>
-        <TrendSearchClient />
+        
+        <MarketSearchClient initialKeywords={keywords} />
       </div>
     </AppFrame>
   );
