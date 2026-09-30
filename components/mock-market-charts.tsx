@@ -115,30 +115,52 @@ export function TopCompetitorsTable({ products }: { products?: any[] }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+      <table className="w-full text-left text-sm whitespace-nowrap">
+        <thead className="border-b border-slate-200 bg-slate-50/50 text-slate-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
           <tr>
-            <th className="px-4 py-3 font-medium">Top Products (Market)</th>
-            <th className="px-4 py-3 font-medium">Price</th>
-            <th className="px-4 py-3 font-medium">Est. Sales / Ratings</th>
-            <th className="px-4 py-3 font-medium">External ID</th>
+            <th className="px-4 py-4 font-medium w-12 text-center">#</th>
+            <th className="px-4 py-4 font-medium">Informasi Produk</th>
+            <th className="px-4 py-4 font-medium">Harga</th>
+            <th className="px-4 py-4 font-medium">Est. Penjualan / Rating</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-          {data.map((p: any) => (
-            <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          {data.map((p: any, index: number) => (
+            <tr key={p.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+              <td className="px-4 py-4 text-center font-medium text-slate-400">
+                {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index + 1}
+              </td>
+              <td className="px-4 py-4 min-w-[300px] whitespace-normal">
+                <div className="font-medium text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug">
+                  {p.name || p.title}
+                </div>
+                <div className="flex items-center gap-3 mt-1.5">
+                  {p.url ? (
+                    <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                      Lihat di Toko &rarr;
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center text-xs text-amber-500 font-medium">
+                      ⭐ {p.rating || "N/A"}
+                    </span>
+                  )}
+                  {p.externalId && (
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-0.5">
+                      ID: {p.externalId}
+                    </span>
+                  )}
+                </div>
+              </td>
+              <td className="px-4 py-4 font-medium text-slate-700 dark:text-slate-300">
+                {p.price.toString().startsWith("Rp") || p.price.toString().startsWith("$") 
+                  ? p.price 
+                  : `$${Number(p.price).toFixed(2)}`}
+              </td>
               <td className="px-4 py-4">
-                <div className="font-medium text-slate-900 dark:text-slate-100 line-clamp-2">{p.name || p.title}</div>
-                {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline mt-1 block">View Product</a>}
-                {!p.url && <div className="text-xs text-amber-500 mt-1">⭐ {p.rating || "N/A"}</div>}
+                <div className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700 border border-teal-100 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800">
+                  {p.monthlySold > 0 ? `+${p.monthlySold.toLocaleString()} terjual/bln` : `${(p.sold || p.historicalSold).toLocaleString()} rating`}
+                </div>
               </td>
-              <td className="px-4 py-4 text-slate-600 dark:text-slate-400">
-                {p.price.toString().startsWith("Rp") || p.price.toString().startsWith("$") ? p.price : `$${p.price}`}
-              </td>
-              <td className="px-4 py-4 text-teal-600 dark:text-teal-400 font-semibold">
-                {p.monthlySold > 0 ? `+${p.monthlySold} items/mo` : `${p.sold || p.historicalSold} ratings`}
-              </td>
-              <td className="px-4 py-4 text-slate-600 dark:text-slate-400">{p.externalId || "-"}</td>
             </tr>
           ))}
         </tbody>

@@ -21,8 +21,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     { label: "Tracked Keywords", value: "2", detail: "Active" },
   ];
 
-  let chartData: any[] = [];
-
   if (keyword && platform === "amazon") {
     const marketKeyword = await prisma.marketKeyword.findFirst({
       where: { keyword: keyword.toLowerCase(), platform: "AMAZON" },
@@ -42,23 +40,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           { label: "Market Demand Spike", value: "N/A", detail: "Need more historical data" },
           { label: "Tracked Products", value: marketKeyword.products.length.toString(), detail: "Top products" },
         ];
-        
-        // Generate historical data backfill ending in today's real data
-        const baseVol = snap.totalSearchVol || 50000;
-        const basePrice = snap.avgPrice || 50;
-        for (let i = 6; i >= 0; i--) {
-          const d = new Date();
-          d.setDate(d.getDate() - i);
-          // Only randomize previous days, today is real
-          const volMod = i === 0 ? 1 : 0.8 + Math.random() * 0.4;
-          const priceMod = i === 0 ? 1 : 0.9 + Math.random() * 0.2;
-          
-          chartData.push({
-            date: d.toISOString().split("T")[0],
-            volume: Math.floor(baseVol * volMod),
-            avgPrice: Math.floor(basePrice * priceMod * 10) / 10
-          });
-        }
       }
     }
   }
@@ -70,18 +51,27 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       <div className="space-y-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
-              {keyword ? `Analisis: ${keyword}` : "Market Intelligence"}
+            {keyword && (
+              <a href={`/research/${platform}`} className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 mb-3 transition-colors">
+                &larr; Kembali ke Daftar Pencarian
+              </a>
+            )}
+            <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50 capitalize">
+              {keyword ? `Detail Analisis: ${keyword}` : "Market Intelligence"}
             </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-400">
-              Analisis permintaan pasar, tren pencarian, dan pergerakan kompetitor di E-Commerce.
+              {keyword 
+                ? `Laporan lengkap pergerakan pasar, kompetitor, dan estimasi penjualan untuk "${keyword}" di ${platform}.` 
+                : "Analisis permintaan pasar, tren pencarian, dan pergerakan kompetitor di E-Commerce."}
             </p>
           </div>
-          <form className="grid gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:grid-cols-[12rem_12rem_auto]">
-            <DateRangePicker defaultValue={range} />
-            <PlatformFilter defaultValue={platform} />
-            <Button type="submit" className="self-end">Apply</Button>
-          </form>
+          {!keyword && (
+            <form className="grid gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:grid-cols-[12rem_12rem_auto]">
+              <DateRangePicker defaultValue={range} />
+              <PlatformFilter defaultValue={platform} />
+              <Button type="submit" className="self-end">Apply</Button>
+            </form>
+          )}
         </div>
 
         {(!keyword || platform !== "amazon") ? (
@@ -115,11 +105,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <div className="grid gap-4 xl:grid-cols-[1fr]">
           <Card>
             <CardHeader>
-              <CardTitle>{keyword ? `Keyword Demand Trend (${keyword})` : "Keyword Demand Trend (Shopee)"}</CardTitle>
-              <CardDescription>Pergerakan volume pencarian dan rata-rata harga pasar.</CardDescription>
+              <CardTitle>Keyword Demand Trend (Shopee)</CardTitle>
+              <CardDescription>Perbandingan volume pencarian dan permintaan pasar antara 2 kata kunci.</CardDescription>
             </CardHeader>
             <CardContent>
-              <MultiKeywordTrendChart chartData={chartData} keyword={keyword} />
+              <MultiKeywordTrendChart />
             </CardContent>
           </Card>
         </div>
