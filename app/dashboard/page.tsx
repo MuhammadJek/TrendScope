@@ -11,8 +11,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const params = await searchParams;
   const platform = typeof params.platform === "string" ? params.platform : "shopee";
   const keyword = typeof params.keyword === "string" ? params.keyword : "";
+  const range = typeof params.range === "string" ? params.range : "30d";
 
-  let realProducts = [];
+  let realProducts: any[] = [];
   let marketKpis = [
     { label: "Total Keyword Search Vol", value: "85.2K", detail: "+12.5% dari bulan lalu" },
     { label: "Avg Competitor Price", value: "Rp 210K", detail: "-5.2% dari bulan lalu" },
