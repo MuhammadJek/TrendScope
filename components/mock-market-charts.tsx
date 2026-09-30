@@ -104,34 +104,41 @@ export function MultiKeywordTrendChart() {
   );
 }
 
-export function TopCompetitorsTable() {
+export function TopCompetitorsTable({ products }: { products?: any[] }) {
   const mockProducts = [
     { id: 1, name: "Sepatu Lari Ortuseight X1", price: "Rp 350.000", sold: 12400, monthlySold: 1200, rating: 4.8 },
     { id: 2, name: "Sepatu Running Mills Trex", price: "Rp 280.000", sold: 8500, monthlySold: 950, rating: 4.7 },
     { id: 3, name: "Aerostreet Running 2.0", price: "Rp 150.000", sold: 45000, monthlySold: 3200, rating: 4.9 },
   ];
 
+  const data = products && products.length > 0 ? products : mockProducts;
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
           <tr>
-            <th className="px-4 py-3 font-medium">Top Products (Shopee)</th>
-            <th className="px-4 py-3 font-medium">Avg Price</th>
-            <th className="px-4 py-3 font-medium">Monthly Sales (Est.)</th>
-            <th className="px-4 py-3 font-medium">Total Sold</th>
+            <th className="px-4 py-3 font-medium">Top Products (Market)</th>
+            <th className="px-4 py-3 font-medium">Price</th>
+            <th className="px-4 py-3 font-medium">Est. Sales / Ratings</th>
+            <th className="px-4 py-3 font-medium">External ID</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-          {mockProducts.map((p) => (
+          {data.map((p: any) => (
             <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
               <td className="px-4 py-4">
-                <div className="font-medium text-slate-900 dark:text-slate-100">{p.name}</div>
-                <div className="text-xs text-amber-500 mt-1">⭐ {p.rating}</div>
+                <div className="font-medium text-slate-900 dark:text-slate-100 line-clamp-2">{p.name || p.title}</div>
+                {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline mt-1 block">View Product</a>}
+                {!p.url && <div className="text-xs text-amber-500 mt-1">⭐ {p.rating || "N/A"}</div>}
               </td>
-              <td className="px-4 py-4 text-slate-600 dark:text-slate-400">{p.price}</td>
-              <td className="px-4 py-4 text-teal-600 dark:text-teal-400 font-semibold">+{p.monthlySold} items</td>
-              <td className="px-4 py-4 text-slate-600 dark:text-slate-400">{p.sold.toLocaleString("id-ID")}</td>
+              <td className="px-4 py-4 text-slate-600 dark:text-slate-400">
+                {p.price.toString().startsWith("Rp") || p.price.toString().startsWith("$") ? p.price : `$${p.price}`}
+              </td>
+              <td className="px-4 py-4 text-teal-600 dark:text-teal-400 font-semibold">
+                {p.monthlySold > 0 ? `+${p.monthlySold} items/mo` : `${p.sold || p.historicalSold} ratings`}
+              </td>
+              <td className="px-4 py-4 text-slate-600 dark:text-slate-400">{p.externalId || "-"}</td>
             </tr>
           ))}
         </tbody>

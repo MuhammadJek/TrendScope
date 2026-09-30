@@ -5,19 +5,44 @@ import { KpiCard } from "@/components/kpi-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MultiKeywordTrendChart, TopCompetitorsTable } from "@/components/mock-market-charts";
+import prisma from "@/lib/prisma";
 
-export default async function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
   const platform = typeof params.platform === "string" ? params.platform : "shopee";
-  const range = typeof params.range === "string" ? params.range : "30d";
+  const keyword = typeof params.keyword === "string" ? params.keyword : "";
 
-  // Mock Market KPI Data
-  const marketKpis = [
+  let realProducts = [];
+  let marketKpis = [
     { label: "Total Keyword Search Vol", value: "85.2K", detail: "+12.5% dari bulan lalu" },
     { label: "Avg Competitor Price", value: "Rp 210K", detail: "-5.2% dari bulan lalu" },
     { label: "Market Demand Spike", value: "+300%", detail: "Spike minggu ini" },
     { label: "Tracked Keywords", value: "2", detail: "Active" },
   ];
+
+  if (keyword && platform === "amazon") {
+    const marketKeyword = await prisma.marketKeyword.findFirst({
+      where: { keyword: keyword.toLowerCase(), platform: "AMAZON" },
+      include: {
+        products: { take: 10, orderBy: { historicalSold: "desc" } },
+        snapshots: { take: 1, orderBy: { date: "desc" } }
+      }
+    });
+
+    if (marketKeyword) {
+      realProducts = marketKeyword.products;
+      if (marketKeyword.snapshots.length > 0) {
+        const snap = marketKeyword.snapshots[0];
+        marketKpis = [
+          { label: "Total Keyword Search Vol", value: (snap.totalSearchVol || 0).toLocaleString(), detail: "Real data from Amazon" },
+          { label: "Avg Competitor Price", value: `$${snap.avgPrice.toFixed(2)}`, detail: "Real data from Amazon" },
+          { label: "Market Demand Spike", value: "N/A", detail: "Need more historical data" },
+          { label: "Tracked Products", value: marketKeyword.products.length.toString(), detail: "Top products" },
+        ];
+      }
+    }
+  }
+
   const icons = [Search, Activity, TrendingUp, Activity];
 
   return (
@@ -25,7 +50,9 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       <div className="space-y-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50">Market Intelligence</h1>
+            <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
+              {keyword ? `Analisis: ${keyword}` : "Market Intelligence"}
+            </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-400">
               Analisis permintaan pasar, tren pencarian, dan pergerakan kompetitor di E-Commerce.
             </p>
@@ -37,16 +64,27 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
           </form>
         </div>
 
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-300 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-          <div>
-            <h3 className="font-semibold">Simulasi Market Intelligence</h3>
-            <p className="text-sm mt-1 opacity-90">
-              Ini adalah tampilan *Proof of Concept* untuk fitur E-Commerce Market Analytics. 
-              Data yang ditampilkan di bawah ini adalah data simulasi (Mock Data). API Integrasi untuk Shopee dan database sedang dalam tahap pengembangan (Arsitektur Queue & Proxy).
-            </p>
+        {(!keyword || platform !== "amazon") ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-300 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold">Simulasi Market Intelligence</h3>
+              <p className="text-sm mt-1 opacity-90">
+                Ini adalah tampilan Mock Data. Untuk melihat Real Data, silakan lacak kata kunci di Amazon Analytics.
+              </p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="rounded-xl border border-teal-200 bg-teal-50 p-4 text-teal-800 dark:border-teal-900/50 dark:bg-teal-950/20 dark:text-teal-300 flex items-start gap-3">
+            <Search className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold">Live Real-Time Data (Amazon)</h3>
+              <p className="text-sm mt-1 opacity-90">
+                Data ini diambil secara real-time dari API Amazon melalui RapidAPI. Harga dan produk di bawah adalah data sungguhan.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {marketKpis.map((kpi, index) => (
@@ -71,11 +109,11 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
             <CardHeader>
               <CardTitle>Top Winning Products (Market Benchmark)</CardTitle>
               <CardDescription>
-                Produk kompetitor yang menguasai kata kunci "Sepatu Lari" dengan tingkat penjualan tertinggi bulan ini.
+                Produk kompetitor yang menguasai pencarian dengan tingkat penjualan tertinggi.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 sm:p-6 sm:pt-0">
-              <TopCompetitorsTable />
+              <TopCompetitorsTable products={realProducts} />
             </CardContent>
           </Card>
         </div>
