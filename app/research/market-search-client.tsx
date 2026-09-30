@@ -138,11 +138,13 @@ export function MarketSearchClient({ initialKeywords, activePlatform }: MarketSe
               </CardContent>
               {!isProcessing && (
                 <div className="px-5 pb-5 pt-0">
-                  <Button asChild variant="secondary" className="w-full justify-between group">
-                    <Link href={`/dashboard?platform=${k.platform.toLowerCase()}&keyword=${encodeURIComponent(k.keyword)}`}>
-                      Lihat Hasil Analisis
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                  <Button 
+                    href={`/analytics/${k.platform.toLowerCase()}/${encodeURIComponent(k.keyword)}`}
+                    variant="secondary" 
+                    className="w-full justify-between group"
+                  >
+                    Lihat Hasil Analisis
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </div>
               )}

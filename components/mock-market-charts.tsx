@@ -24,20 +24,27 @@ const MOCK_TREND_DATA = [
   { date: "2024-03-30", shopee_sepatu_lari: 2300, shopee_sepatu_futsal: 1050 },
 ];
 
-export function MultiKeywordTrendChart() {
+export function MultiKeywordTrendChart({ chartData, keyword }: { chartData?: any[], keyword?: string }) {
+  const data = chartData && chartData.length > 0 ? chartData : MOCK_TREND_DATA;
+  const labelA = keyword ? `${keyword} (Search Vol)` : "Sepatu Lari (Shopee)";
+  const labelB = keyword ? "Avg Price Trend" : "Sepatu Futsal (Shopee)";
+  
+  const dataKeyA = keyword ? "volume" : "shopee_sepatu_lari";
+  const dataKeyB = keyword ? "avgPrice" : "shopee_sepatu_futsal";
+
   const handleExportCSV = () => {
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      "Date,Sepatu Lari (Shopee),Sepatu Futsal (Shopee)\n" +
-      MOCK_TREND_DATA.map(
+      `Date,${labelA},${labelB}\n` +
+      data.map(
         (row) =>
-          `${row.date},${row.shopee_sepatu_lari},${row.shopee_sepatu_futsal}`
+          `${row.date},${row[dataKeyA]},${row[dataKeyB]}`
       ).join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "trend_sepatu_maret_2024.csv");
+    link.setAttribute("download", `trend_${keyword || "market"}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -57,7 +64,7 @@ export function MultiKeywordTrendChart() {
       
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={MOCK_TREND_DATA} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+          <LineChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
             <XAxis
               dataKey="date"
@@ -81,18 +88,18 @@ export function MultiKeywordTrendChart() {
             />
             <Legend verticalAlign="top" height={36} iconType="circle" />
             <Line
-              name="Sepatu Lari (Demand)"
+              name={labelA}
               type="monotone"
-              dataKey="shopee_sepatu_lari"
+              dataKey={dataKeyA}
               stroke="#0f766e"
               strokeWidth={3}
               dot={{ r: 4, strokeWidth: 2 }}
               activeDot={{ r: 6 }}
             />
             <Line
-              name="Sepatu Futsal (Demand)"
+              name={labelB}
               type="monotone"
-              dataKey="shopee_sepatu_futsal"
+              dataKey={dataKeyB}
               stroke="#64748b"
               strokeWidth={2}
               dot={{ r: 3, strokeWidth: 2 }}
