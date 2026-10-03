@@ -3,7 +3,6 @@ import { AppFrame } from "@/components/app-frame";
 import { KpiCard } from "@/components/kpi-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MultiKeywordTrendChart, TopCompetitorsTable } from "@/components/mock-market-charts";
-import { DismissibleWrapper } from "@/components/dismissible-wrapper";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -96,41 +95,35 @@ export default async function KeywordAnalyticsPage({
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {marketKpis.map((kpi, index) => (
-            <DismissibleWrapper key={kpi.label}>
-              <KpiCard {...kpi} icon={icons[index]} />
-            </DismissibleWrapper>
+            <KpiCard key={kpi.label} {...kpi} icon={icons[index]} />
           ))}
         </div>
 
-        <DismissibleWrapper>
-          <div className="grid gap-4 xl:grid-cols-[1fr]">
-            <Card>
-              <CardHeader>
-                <CardTitle>Keyword Demand Trend ({marketKeyword.keyword})</CardTitle>
-                <CardDescription>Pergerakan volume pencarian dan rata-rata harga pasar.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <MultiKeywordTrendChart chartData={chartData} keyword={marketKeyword.keyword} />
-              </CardContent>
-            </Card>
-          </div>
-        </DismissibleWrapper>
+        <div className="grid gap-4 xl:grid-cols-[1fr]">
+          <Card>
+            <CardHeader>
+              <CardTitle>Keyword Demand Trend ({marketKeyword.keyword})</CardTitle>
+              <CardDescription>Pergerakan volume pencarian dan rata-rata harga pasar.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MultiKeywordTrendChart chartData={chartData} keyword={marketKeyword.keyword} />
+            </CardContent>
+          </Card>
+        </div>
 
-        <DismissibleWrapper>
-          <div className="grid gap-4 xl:grid-cols-[1fr]">
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Winning Products (Market Benchmark)</CardTitle>
-                <CardDescription>
-                  Produk kompetitor yang menguasai pencarian dengan tingkat penjualan tertinggi.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0 sm:p-6 sm:pt-0">
-                <TopCompetitorsTable products={realProducts} />
-              </CardContent>
-            </Card>
-          </div>
-        </DismissibleWrapper>
+        <div className="grid gap-4 xl:grid-cols-[1fr]">
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Winning Products (Market Benchmark)</CardTitle>
+              <CardDescription>
+                Produk kompetitor yang menguasai pencarian dengan tingkat penjualan tertinggi.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 sm:p-6 sm:pt-0">
+              <TopCompetitorsTable products={realProducts} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </AppFrame>
   );
