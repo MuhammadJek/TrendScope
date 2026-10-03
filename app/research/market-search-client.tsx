@@ -84,7 +84,8 @@ export function MarketSearchClient({ initialKeywords, activePlatform }: MarketSe
 
   const colorClass = 
     activePlatform === 'SHOPEE' ? 'bg-orange-500' : 
-    activePlatform === 'AMAZON' ? 'bg-amber-400' : 'bg-green-500';
+    activePlatform === 'AMAZON' ? 'bg-amber-400' : 
+    activePlatform === 'ETSY' ? 'bg-orange-600' : 'bg-green-500';
 
   return (
     <div className="space-y-6">

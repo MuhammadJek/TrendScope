@@ -20,8 +20,8 @@ export default async function PlatformResearchPage({ params }: Props) {
   const resolvedParams = await params;
   const platform = resolvedParams.platform.toUpperCase();
   
-  if (!["SHOPEE", "AMAZON", "ENVATO"].includes(platform)) {
-    redirect("/research/shopee");
+  if (!["SHOPEE", "AMAZON", "ENVATO", "ETSY"].includes(platform)) {
+    redirect("/research/amazon");
   }
 
   const keywords = await getTrackedKeywords();

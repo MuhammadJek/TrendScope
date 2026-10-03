@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { searchShopee } from "@/lib/shopee-api";
 import { searchEnvato } from "@/lib/envato-api";
+import { searchEtsy } from "@/lib/etsy-api";
 
 export async function trackKeywordAction(keyword: string, platform: string) {
   if (!keyword || keyword.trim() === "") {
@@ -281,6 +282,65 @@ export async function trackKeywordAction(keyword: string, platform: string) {
             avgPrice: avgPrice,
             totalMonthlySold: Math.floor(totalSoldEstimates / 12),
             totalSearchVol: envatoProducts.length,
+          },
+        });
+      }
+    } else if (platform === "ETSY") {
+      const etsyProducts = await searchEtsy(cleanKeyword);
+
+      if (etsyProducts.length > 0) {
+        await prisma.marketProduct.deleteMany({
+          where: { keywordId: marketKeyword.id },
+        });
+
+        let totalPrice = 0;
+        let validPriceCount = 0;
+        let totalSoldEstimates = 0;
+
+        const productInserts = etsyProducts.map((prod) => {
+          if (prod.price > 0) {
+            totalPrice += prod.price;
+            validPriceCount++;
+          }
+          totalSoldEstimates += prod.historicalSold;
+
+          return {
+            keywordId: marketKeyword.id,
+            externalId: prod.externalId,
+            title: prod.title.substring(0, 200),
+            price: prod.price,
+            historicalSold: prod.historicalSold,
+            monthlySold: Math.floor(prod.historicalSold / 12),
+            url: prod.url,
+          };
+        });
+
+        await prisma.marketProduct.createMany({
+          data: productInserts,
+        });
+
+        const avgPrice = validPriceCount > 0 ? totalPrice / validPriceCount : 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        await prisma.marketSnapshot.upsert({
+          where: {
+            keywordId_date: {
+              keywordId: marketKeyword.id,
+              date: today,
+            },
+          },
+          update: {
+            avgPrice: avgPrice,
+            totalMonthlySold: Math.floor(totalSoldEstimates / 12),
+            totalSearchVol: etsyProducts.length,
+          },
+          create: {
+            keywordId: marketKeyword.id,
+            date: today,
+            avgPrice: avgPrice,
+            totalMonthlySold: Math.floor(totalSoldEstimates / 12),
+            totalSearchVol: etsyProducts.length,
           },
         });
       }

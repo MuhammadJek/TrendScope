@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
-  { href: "/research/shopee", label: "Shopee (Coming Soon)", icon: Search },
   { href: "/research/amazon", label: "Amazon Analytics", icon: Search },
+  { href: "/research/etsy", label: "Etsy Analytics", icon: Search },
   { href: "/research/envato", label: "Envato Analytics", icon: Search },
+  { href: "/research/shopee", label: "Shopee (Coming Soon)", icon: Search },
   { href: "/youtube", label: "YouTube Insights", icon: PlaySquare },
   { href: "/pricing", label: "Pricing", icon: Compass },
   { href: "/profile", label: "Profile", icon: User },
