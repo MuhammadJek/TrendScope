@@ -42,7 +42,7 @@ export default async function KeywordAnalyticsPage({
     const snap = marketKeyword.snapshots[0];
     marketKpis = [
       { label: "Total Keyword Search Vol", value: (snap.totalSearchVol || 0).toLocaleString(), detail: `Real data from ${platform}` },
-      { label: "Avg Competitor Price", value: platform === "AMAZON" ? `$${snap.avgPrice.toFixed(2)}` : `Rp ${snap.avgPrice.toLocaleString("id-ID")}`, detail: `Real data from ${platform}` },
+      { label: "Avg Competitor Price", value: platform === "SHOPEE" ? `Rp ${snap.avgPrice.toLocaleString("id-ID")}` : `$${snap.avgPrice.toFixed(2)}`, detail: `Real data from ${platform}` },
       { label: "Market Demand Spike", value: "N/A", detail: "Need more historical data" },
       { label: "Tracked Products", value: marketKeyword.products.length.toString(), detail: "Top products found" },
     ];

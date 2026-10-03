@@ -2,12 +2,16 @@
 
 /**
  * Shopee API Integration via RapidAPI
- * 
- * Menggunakan "Shopee - Pair Product" atau scraper sejenis di RapidAPI.
- * Harga dikembalikan dalam Rupiah (angka bulat, misal 150000).
- * 
+ *
+ * Menggunakan "Shopee API" di RapidAPI (shopee-api.p.rapidapi.com).
+ * ⚠️  PENTING: Anda harus subscribe ke API ini di RapidAPI terlebih dahulu:
+ *     https://rapidapi.com/search/shopee
+ *     Cari "Shopee API" → klik Subscribe (ada free tier).
+ *
+ * Harga dikembalikan dalam Rupiah (IDR), angka bulat.
+ *
  * Variabel ENV yang dibutuhkan:
- *   RAPIDAPI_KEY - API key dari RapidAPI (sudah ada untuk Amazon)
+ *   RAPIDAPI_KEY — API key dari RapidAPI (sudah ada untuk Amazon)
  */
 
 export interface ShopeeProduct {
@@ -25,88 +29,130 @@ export async function searchShopee(keyword: string): Promise<ShopeeProduct[]> {
     return [];
   }
 
-  try {
-    // Menggunakan Shopee scraper dari RapidAPI
-    // Endpoint ini mencari produk Shopee Indonesia
-    const url = `https://shopee-scraper3.p.rapidapi.com/search?keyword=${encodeURIComponent(keyword)}&page=0&sort_by=relevancy&country=ID`;
+  // Coba beberapa endpoint RapidAPI Shopee yang diketahui masih aktif
+  const endpoints = [
+    {
+      host: "shopee-api.p.rapidapi.com",
+      url: `https://shopee-api.p.rapidapi.com/search?keyword=${encodeURIComponent(keyword)}&country=id`,
+    },
+    {
+      host: "shopee2.p.rapidapi.com",
+      url: `https://shopee2.p.rapidapi.com/search?keyword=${encodeURIComponent(keyword)}&country=id`,
+    },
+  ];
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "x-rapidapi-host": "shopee-scraper3.p.rapidapi.com",
-        "x-rapidapi-key": apiKey,
-      },
-      cache: "no-store",
-    });
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`[Shopee API] Trying ${endpoint.host}...`);
 
-    if (!response.ok) {
-      console.error(`[Shopee API] HTTP Error: ${response.status}`);
-      return [];
-    }
+      const response = await fetch(endpoint.url, {
+        method: "GET",
+        headers: {
+          "x-rapidapi-host": endpoint.host,
+          "x-rapidapi-key": apiKey,
+        },
+        cache: "no-store",
+      });
 
-    const data = await response.json();
-
-    // Normalisasi response — struktur bisa berbeda per provider RapidAPI
-    // Berikut mencoba beberapa kemungkinan struktur:
-    let rawItems: any[] = [];
-
-    if (Array.isArray(data)) {
-      rawItems = data;
-    } else if (data?.data?.items && Array.isArray(data.data.items)) {
-      rawItems = data.data.items;
-    } else if (data?.items && Array.isArray(data.items)) {
-      rawItems = data.items;
-    } else if (data?.data && Array.isArray(data.data)) {
-      rawItems = data.data;
-    }
-
-    if (rawItems.length === 0) {
-      console.warn("[Shopee API] No items found for keyword:", keyword);
-      return [];
-    }
-
-    const products: ShopeeProduct[] = rawItems.slice(0, 50).map((item: any) => {
-      // Shopee API biasanya mengembalikan harga dalam unit terkecil (x100000)
-      // Contoh: 15000000000 = Rp 150.000 (bagi 100000)
-      // Tapi tergantung API, bisa juga langsung Rupiah.
-      let price = 0;
-      if (item.price !== undefined) {
-        price = Number(item.price);
-        // Jika harga terlalu besar (> 1 miliar), kemungkinan dalam format mikro
-        if (price > 1_000_000_000) {
-          price = Math.round(price / 100000);
-        }
-      } else if (item.price_min !== undefined) {
-        price = Number(item.price_min);
-        if (price > 1_000_000_000) {
-          price = Math.round(price / 100000);
-        }
+      // 403 = Not subscribed, 404 = API doesn't exist → skip to next
+      if (response.status === 403) {
+        console.warn(
+          `[Shopee API] ❌ Belum subscribe ke ${endpoint.host}. Silakan subscribe di https://rapidapi.com`
+        );
+        continue;
+      }
+      if (response.status === 404) {
+        console.warn(`[Shopee API] ${endpoint.host} tidak ditemukan, skip...`);
+        continue;
+      }
+      if (!response.ok) {
+        console.error(
+          `[Shopee API] HTTP Error ${response.status} dari ${endpoint.host}`
+        );
+        continue;
       }
 
-      const historicalSold = 
-        item.historical_sold ?? 
-        item.sold ?? 
-        item.item_sold ?? 
-        item.sales ?? 
-        0;
+      const data = await response.json();
 
-      const shopId = item.shopid ?? item.shop_id ?? "";
-      const itemId = item.itemid ?? item.item_id ?? item.id ?? "";
+      // Normalisasi response — struktur bisa berbeda per provider RapidAPI
+      let rawItems: any[] = [];
+      if (Array.isArray(data)) {
+        rawItems = data;
+      } else if (data?.data?.items && Array.isArray(data.data.items)) {
+        rawItems = data.data.items;
+      } else if (data?.items && Array.isArray(data.items)) {
+        rawItems = data.items;
+      } else if (data?.data && Array.isArray(data.data)) {
+        rawItems = data.data;
+      } else if (data?.products && Array.isArray(data.products)) {
+        rawItems = data.products;
+      } else if (data?.result?.items && Array.isArray(data.result.items)) {
+        rawItems = data.result.items;
+      }
 
-      return {
-        externalId: String(itemId),
-        title: (item.name ?? item.title ?? "Produk Shopee").substring(0, 200),
-        price: Math.round(price),
-        historicalSold: Number(historicalSold) || 0,
-        url: itemId && shopId
-          ? `https://shopee.co.id/product/${shopId}/${itemId}`
-          : item.url ?? item.product_url ?? "",
-      };
-    });
+      if (rawItems.length === 0) {
+        console.warn("[Shopee API] Tidak ada produk ditemukan untuk:", keyword);
+        continue;
+      }
 
-    return products;
-  } catch (error: any) {
-    console.error("[Shopee API] Error:", error.message);
-    return [];
+      console.log(`[Shopee API] ✅ ${rawItems.length} produk ditemukan dari ${endpoint.host}`);
+
+      const products: ShopeeProduct[] = rawItems
+        .slice(0, 50)
+        .map((item: any) => {
+          // Parse harga — Shopee API bisa return dalam berbagai format
+          let price = 0;
+          if (item.price !== undefined) {
+            price = Number(item.price);
+            // Jika harga terlalu besar (format mikro Shopee: x100000)
+            if (price > 1_000_000_000) {
+              price = Math.round(price / 100000);
+            }
+          } else if (item.price_min !== undefined) {
+            price = Number(item.price_min);
+            if (price > 1_000_000_000) {
+              price = Math.round(price / 100000);
+            }
+          }
+
+          const historicalSold =
+            item.historical_sold ??
+            item.sold ??
+            item.item_sold ??
+            item.sales ??
+            item.orders ??
+            0;
+
+          const shopId = item.shopid ?? item.shop_id ?? "";
+          const itemId = item.itemid ?? item.item_id ?? item.id ?? "";
+
+          return {
+            externalId: String(itemId),
+            title: (
+              item.name ??
+              item.title ??
+              item.product_name ??
+              "Produk Shopee"
+            ).substring(0, 200),
+            price: Math.round(price),
+            historicalSold: Number(historicalSold) || 0,
+            url:
+              itemId && shopId
+                ? `https://shopee.co.id/product/${shopId}/${itemId}`
+                : item.url ?? item.product_url ?? "",
+          };
+        });
+
+      return products;
+    } catch (error: any) {
+      console.error(`[Shopee API] Error dari ${endpoint.host}:`, error.message);
+      continue;
+    }
   }
+
+  // Semua endpoint gagal
+  console.error(
+    "[Shopee API] ⚠️ Semua endpoint gagal. Pastikan Anda sudah subscribe ke Shopee API di RapidAPI."
+  );
+  return [];
 }
