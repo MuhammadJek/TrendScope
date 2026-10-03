@@ -76,15 +76,34 @@ TUGAS: Berikan analisis strategi dalam Bahasa Indonesia yang mencakup:
 
 Format jawaban dalam Markdown yang rapi. Jangan terlalu panjang, maksimal 400 kata. Fokus pada insight yang actionable.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-    });
+    let text = "";
+    let lastError = null;
+    const modelsToTry = ["gemini-3.8-flash", "gemini-3.8-flash-lite"];
 
-    const text = response.text;
+    for (const model of modelsToTry) {
+      try {
+        console.log(`[AI Insight] Mencoba model ${model}...`);
+        const response = await ai.models.generateContent({
+          model: model,
+          contents: prompt,
+        });
+        text = response.text || "";
+        if (text) break; // Berhasil, keluar dari loop
+      } catch (e: any) {
+        lastError = e;
+        console.warn(`[AI Insight] Model ${model} gagal:`, e.message);
+        // Jika model sibuk (503), tunggu 2 detik sebelum coba model berikutnya
+        if (e.message?.includes("503") || e.message?.includes("UNAVAILABLE")) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        } else {
+          // Jika error lain (misal API key salah), langsung keluar
+          throw e;
+        }
+      }
+    }
 
-    if (!text) {
-      return { success: false, error: "AI tidak menghasilkan respons." };
+    if (!text && lastError) {
+      throw lastError;
     }
 
     return { success: true, insight: text };
