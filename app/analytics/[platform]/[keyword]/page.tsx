@@ -3,6 +3,7 @@ import { AppFrame } from "@/components/app-frame";
 import { KpiCard } from "@/components/kpi-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MultiKeywordTrendChart, TopCompetitorsTable } from "@/components/mock-market-charts";
+import { AiInsightCard } from "@/components/ai-insight-card";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -98,6 +99,19 @@ export default async function KeywordAnalyticsPage({
             <KpiCard key={kpi.label} {...kpi} icon={icons[index]} />
           ))}
         </div>
+
+        <AiInsightCard
+          keyword={marketKeyword.keyword}
+          platform={platform}
+          products={realProducts.map(p => ({
+            title: p.title,
+            price: p.price,
+            historicalSold: p.historicalSold,
+            monthlySold: p.monthlySold,
+          }))}
+          avgPrice={marketKeyword.snapshots[0]?.avgPrice ?? 0}
+          totalProducts={realProducts.length}
+        />
 
         <div className="grid gap-4 xl:grid-cols-[1fr]">
           <Card>
