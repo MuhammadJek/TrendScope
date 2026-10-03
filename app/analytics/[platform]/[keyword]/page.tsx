@@ -120,7 +120,7 @@ export default async function KeywordAnalyticsPage({
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 sm:p-6 sm:pt-0">
-              <TopCompetitorsTable products={realProducts} />
+              <TopCompetitorsTable products={realProducts} platform={platform} />
             </CardContent>
           </Card>
         </div>

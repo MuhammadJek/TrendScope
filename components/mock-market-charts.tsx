@@ -131,7 +131,7 @@ export function MultiKeywordTrendChart({
   );
 }
 
-export function TopCompetitorsTable({ products }: { products?: any[] }) {
+export function TopCompetitorsTable({ products, platform }: { products?: any[]; platform?: string }) {
   const mockProducts = [
     { id: 1, name: "Sepatu Lari Ortuseight X1", price: 350000, sold: 12400, monthlySold: 1200, rating: 4.8 },
     { id: 2, name: "Sepatu Running Mills Trex", price: 280000, sold: 8500, monthlySold: 950, rating: 4.7 },
@@ -141,6 +141,18 @@ export function TopCompetitorsTable({ products }: { products?: any[] }) {
   const [maxPrice, setMaxPrice] = useState("");
   const [minSales, setMinSales] = useState("");
   const [sortBy, setSortBy] = useState("sales_desc");
+
+  // Format harga berdasarkan platform
+  const formatPrice = (price: number | string) => {
+    const numPrice = typeof price === "string" ? parseFloat(price.replace(/[^0-9.-]+/g, "")) : price;
+    if (isNaN(numPrice)) return String(price);
+    
+    if (platform === "SHOPEE") {
+      return `Rp ${numPrice.toLocaleString("id-ID")}`;
+    }
+    // Default: USD (Amazon, Envato)
+    return `$${numPrice.toFixed(2)}`;
+  };
 
   const data = products && products.length > 0 ? products : mockProducts;
 
@@ -176,7 +188,7 @@ export function TopCompetitorsTable({ products }: { products?: any[] }) {
     const escapeCSV = (str: string) => `"${String(str).replace(/"/g, '""')}"`;
     const headers = ["Rank", "Product ID", "Product Name", "Price", "URL", "Sales/Ratings", "Fetched At"];
     const rows = filteredAndSortedData.map((p: any, index: number) => {
-      const priceStr = String(p.price).startsWith("Rp") || String(p.price).startsWith("$") ? p.price : `$${Number(p.price).toFixed(2)}`;
+      const priceStr = formatPrice(p.price);
       const salesStr = p.monthlySold > 0 ? `+${p.monthlySold} items/mo` : `${p.sold || p.historicalSold} ratings`;
       const dateStr = p.fetchedAt ? new Date(p.fetchedAt).toLocaleString('id-ID') : "Today";
       return [index + 1, escapeCSV(p.externalId || p.id), escapeCSV(p.name || p.title || ""), escapeCSV(priceStr), escapeCSV(p.url || ""), escapeCSV(salesStr), escapeCSV(dateStr)].join(",");
@@ -251,7 +263,7 @@ export function TopCompetitorsTable({ products }: { products?: any[] }) {
                   </div>
                 </td>
                 <td className="px-4 py-4 font-medium text-slate-700 dark:text-slate-300">
-                  {String(p.price).startsWith("Rp") || String(p.price).startsWith("$") ? p.price : `$${Number(p.price).toFixed(2)}`}
+                  {formatPrice(p.price)}
                 </td>
                 <td className="px-4 py-4">
                   <div className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700 border border-teal-100">
