@@ -175,3 +175,20 @@ export async function getTrackedKeywords() {
     return [];
   }
 }
+
+export async function deleteKeywordAction(keyword: string, platform: string) {
+  try {
+    await prisma.marketKeyword.delete({
+      where: {
+        keyword_platform: {
+          keyword: keyword.toLowerCase(),
+          platform: platform.toUpperCase(),
+        }
+      }
+    });
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting keyword:", error);
+    return { success: false, error: error.message };
+  }
+}

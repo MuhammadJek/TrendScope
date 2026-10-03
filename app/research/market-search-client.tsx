@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Plus, Loader2, TrendingUp, RefreshCw, ShoppingCart, CheckCircle2, ArrowRight } from "lucide-react";
+import { Search, Plus, Loader2, TrendingUp, RefreshCw, ShoppingCart, CheckCircle2, ArrowRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { trackKeywordAction } from "@/lib/market-actions";
+import { trackKeywordAction, deleteKeywordAction } from "@/lib/market-actions";
 import Link from "next/link";
 
 interface MarketSearchClientProps {
@@ -16,6 +16,7 @@ interface MarketSearchClientProps {
 export function MarketSearchClient({ initialKeywords, activePlatform }: MarketSearchClientProps) {
   const [keyword, setKeyword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [keywords, setKeywords] = useState(initialKeywords);
   const [processingIds, setProcessingIds] = useState<Record<string, boolean>>({});
 
@@ -67,6 +68,20 @@ export function MarketSearchClient({ initialKeywords, activePlatform }: MarketSe
     setIsLoading(false);
   };
 
+  const handleDelete = async (id: string, keyword: string, platform: string) => {
+    if (!confirm(`Yakin ingin menghapus kata kunci "${keyword}"?`)) return;
+    
+    setIsDeletingId(id);
+    const result = await deleteKeywordAction(keyword, platform);
+    
+    if (result.success) {
+      setKeywords(prev => prev.filter(k => k.id !== id));
+    } else {
+      alert(result.error);
+    }
+    setIsDeletingId(null);
+  };
+
   const colorClass = 
     activePlatform === 'SHOPEE' ? 'bg-orange-500' : 
     activePlatform === 'AMAZON' ? 'bg-amber-400' : 'bg-green-500';
@@ -103,6 +118,7 @@ export function MarketSearchClient({ initialKeywords, activePlatform }: MarketSe
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {keywords.map((k) => {
           const isProcessing = processingIds[k.id];
+          const isDeleting = isDeletingId === k.id;
           
           return (
             <Card key={k.id} className="relative overflow-hidden flex flex-col">
@@ -116,17 +132,27 @@ export function MarketSearchClient({ initialKeywords, activePlatform }: MarketSe
                       {k.platform}
                     </CardDescription>
                   </div>
-                  {isProcessing ? (
-                    <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                      <RefreshCw className="w-3 h-3 mr-1 animate-spin-slow" />
-                      Processing
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-semibold text-teal-800 dark:bg-teal-900/30 dark:text-teal-400">
-                      <CheckCircle2 className="w-3 h-3 mr-1" />
-                      Completed
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {isProcessing ? (
+                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                        <RefreshCw className="w-3 h-3 mr-1 animate-spin-slow" />
+                        Processing
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-semibold text-teal-800 dark:bg-teal-900/30 dark:text-teal-400">
+                        <CheckCircle2 className="w-3 h-3 mr-1" />
+                        Completed
+                      </span>
+                    )}
+                    <button
+                      onClick={() => handleDelete(k.id, k.keyword, k.platform)}
+                      disabled={isDeleting || isProcessing}
+                      title="Hapus Kata Kunci"
+                      className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                    >
+                      {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="flex-1">
