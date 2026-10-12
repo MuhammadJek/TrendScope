@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   Tag,
   Share2,
+  Bookmark,
   PlaySquare,
   TrendingUp,
   Code2,
@@ -21,6 +22,9 @@ import {
   ChevronDown,
   ChevronRight,
   LucideIcon,
+  Building,
+  CreditCard,
+  Flame,
 } from "lucide-react";
 import { UserAvatar } from "@/components/auth/user-avatar";
 import { cn } from "@/lib/utils";
@@ -44,13 +48,20 @@ interface MenuCategory {
 const menuCategories: MenuCategory[] = [
   {
     id: "ecommerce-pod",
-    title: "Global E-commerce & POD",
+    title: "Marketplace Feeds",
     icon: Globe,
     items: [
       {
         href: "/research/amazon",
         label: "Amazon Analytics",
         icon: ShoppingBag,
+        badge: "Live",
+        badgeVariant: "live",
+      },
+      {
+        href: "/research/ebay",
+        label: "eBay Analytics",
+        icon: Tag,
         badge: "Live",
         badgeVariant: "live",
       },
@@ -67,20 +78,13 @@ const menuCategories: MenuCategory[] = [
         icon: ShoppingCart,
         badge: "Soon",
         badgeVariant: "soon",
-      },
-      {
-        href: "/research/ebay",
-        label: "eBay Analytics",
-        icon: Tag,
-        badge: "Soon",
-        badgeVariant: "soon",
         disabled: true,
       },
     ],
   },
   {
     id: "social-creator",
-    title: "Social Commerce & Creator",
+    title: "Social Platforms",
     icon: Share2,
     items: [
       {
@@ -92,17 +96,16 @@ const menuCategories: MenuCategory[] = [
       },
       {
         href: "/research/tiktok",
-        label: "TikTok Shop",
+        label: "TikTok Analytics",
         icon: TrendingUp,
-        badge: "Soon",
-        badgeVariant: "soon",
-        disabled: true,
+        badge: "Live",
+        badgeVariant: "live",
       },
     ],
   },
   {
     id: "digital-developers",
-    title: "Digital Assets & Software",
+    title: "Digital & Developer Assets",
     icon: Code2,
     items: [
       {
@@ -176,20 +179,62 @@ export function AppSidebar({
         </Link>
 
         {/* Scrollable Navigation */}
-        <div className="mt-5 flex-1 overflow-y-auto pr-1 space-y-4 scrollbar-thin">
-          {/* Main Overview Item */}
-          <div>
+        <div className="mt-4 flex-1 overflow-y-auto pr-1 space-y-4 scrollbar-thin">
+          {/* Core Product Intelligence Section */}
+          <div className="space-y-1">
+            <p className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              Core Intelligence
+            </p>
             <Link
               href="/dashboard"
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition",
+                "flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold transition",
                 isDashboardActive
-                  ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                  ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950 shadow-xs"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-50"
               )}
             >
-              <BarChart3 className="h-4 w-4" aria-hidden="true" />
+              <BarChart3 className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>Dashboard Overview</span>
+            </Link>
+
+            <Link
+              href="/dashboard#market-opportunities"
+              className="flex items-center justify-between rounded-xl px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-50 transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+                <span>Market Opportunities</span>
+              </div>
+              <span className="rounded bg-teal-50 px-1.5 py-0.5 text-[10px] font-semibold text-teal-700 dark:bg-teal-950/60 dark:text-teal-400 border border-teal-200/60 dark:border-teal-800/60">
+                Pillar 3
+              </span>
+            </Link>
+
+            <Link
+              href="/dashboard#trending-products"
+              className="flex items-center justify-between rounded-xl px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-50 transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <ShoppingBag className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <span>Trending Products</span>
+              </div>
+              <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
+                Pillar 1
+              </span>
+            </Link>
+
+            <Link
+              href="/dashboard#social-trends"
+              className="flex items-center justify-between rounded-xl px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-50 transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <Flame className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                <span>Social Media Trends</span>
+              </div>
+              <span className="rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800/60">
+                Pillar 2
+              </span>
             </Link>
           </div>
 
@@ -298,16 +343,40 @@ export function AppSidebar({
           {/* General Utility Links */}
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-1">
             <Link
-              href="/pricing"
+              href="/dashboard/saved-searches"
               className={cn(
                 "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium transition",
-                pathname === "/pricing"
+                pathname === "/dashboard/saved-searches"
                   ? "bg-slate-950 font-semibold text-white dark:bg-white dark:text-slate-950"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-50"
               )}
             >
-              <Compass className="h-3.5 w-3.5" />
-              <span>Pricing Plans</span>
+              <Bookmark className="h-3.5 w-3.5" />
+              <span>Saved Searches</span>
+            </Link>
+            <Link
+              href="/dashboard/workspace"
+              className={cn(
+                "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium transition",
+                pathname === "/dashboard/workspace"
+                  ? "bg-slate-950 font-semibold text-white dark:bg-white dark:text-slate-950"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-50"
+              )}
+            >
+              <Building className="h-3.5 w-3.5" />
+              <span>Workspace & Team</span>
+            </Link>
+            <Link
+              href="/dashboard/billing"
+              className={cn(
+                "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium transition",
+                pathname === "/dashboard/billing"
+                  ? "bg-slate-950 font-semibold text-white dark:bg-white dark:text-slate-950"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-50"
+              )}
+            >
+              <CreditCard className="h-3.5 w-3.5" />
+              <span>Billing & Plan</span>
             </Link>
             <Link
               href="/settings"
@@ -338,16 +407,13 @@ export function AppSidebar({
             </Link>
           ) : (
             <div>
-              <p className="text-xs font-semibold text-slate-950 dark:text-slate-50">Demo Mode</p>
-              <p className="mt-0.5 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
-                Multi-platform market intelligence & trend analytics.
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <p className="text-xs font-semibold text-slate-950 dark:text-slate-50">TrendScope Active</p>
+              </div>
+              <p className="mt-1 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
+                Connected marketplace & social media feeds active.
               </p>
-              <Link
-                href="/login"
-                className="mt-2.5 flex w-full items-center justify-center rounded-lg bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-              >
-                Sign in
-              </Link>
             </div>
           )}
         </div>

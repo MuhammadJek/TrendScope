@@ -86,7 +86,7 @@ export function MultiKeywordTrendChart({
               dy={10}
               tickFormatter={(val) => {
                 const date = new Date(val);
-                return `${date.getDate()} ${date.toLocaleString("id-ID", { month: "short" })}`;
+                return `${date.getDate()} ${date.toLocaleString("en-US", { month: "short" })}`;
               }}
             />
             <YAxis
@@ -270,7 +270,7 @@ export function TopCompetitorsTable({ products, platform }: { products?: any[]; 
                     {p.monthlySold > 0 ? `+${p.monthlySold.toLocaleString()} terjual/bln` : `${(p.sold || p.historicalSold).toLocaleString()} rating`}
                   </div>
                 </td>
-                <td className="px-4 py-4 text-xs text-slate-500">
+                <td className="px-4 py-4 text-xs text-slate-500" suppressHydrationWarning>
                   {p.fetchedAt ? new Date(p.fetchedAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : "Hari Ini"}
                 </td>
               </tr>

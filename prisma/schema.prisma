@@ -12,15 +12,28 @@ datasource db {
 // USER & AUTH (Replacing mock-store for relationships)
 // -----------------------------------------------------------------------------
 model User {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   name          String
-  email         String    @unique
+  email         String   @unique
   passwordHash  String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean  @default(false)
   image         String?
-  role          String    @default("USER") // "USER" | "ADMIN"
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          String   @default("USER") // "USER" | "ADMIN"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Subscription System
+  subscriptionPlan   String    @default("BASIC") // "BASIC", "PRO_MONTHLY", "PRO_YEARLY"
+  subscriptionStatus String    @default("ACTIVE")
+  paypalSubId        String?   @unique
+  subscriptionEnd    DateTime?
+
+  // Usage Tracking
+  monthlySearchesUsed Int      @default(0)
+  lastSearchResetDate DateTime @default(now())
+
+  // Dashboard Preferences
+  preferences Json? // e.g. { country: "US", categories: ["Fashion", "Beauty"], timeRange: "30d" }
 
   trackedEntities  TrackedEntity[]
   shopifyStores    ShopifyStore[]
@@ -77,7 +90,7 @@ model SavedSearch {
   keyword     String
   language    String?
   country     String?
-  provider    String   // WIKIPEDIA, YOUTUBE, GOOGLE_ADS, etc.
+  provider    String // WIKIPEDIA, YOUTUBE, GOOGLE_ADS, etc.
   resultCount Int      @default(0)
   createdAt   DateTime @default(now())
 
@@ -113,18 +126,18 @@ model VideoInsight {
 // API CONNECTIONS
 // -----------------------------------------------------------------------------
 model ApiConnection {
-  id                    String    @id @default(cuid())
-  provider              String    @unique // GOOGLE_ADS, DATAFORSEO_TRENDS, etc.
-  name                  String
-  status                String    // NOT_CONFIGURED, CONNECTED, ERROR, RATE_LIMITED, etc.
-  encryptedCredentials  String    @db.Text
-  metadata              Json?
-  lastTestedAt          DateTime?
-  lastSuccessAt         DateTime?
-  lastErrorAt           DateTime?
-  lastErrorMessage      String?   @db.Text
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  id                   String    @id @default(cuid())
+  provider             String    @unique // GOOGLE_ADS, DATAFORSEO_TRENDS, etc.
+  name                 String
+  status               String // NOT_CONFIGURED, CONNECTED, ERROR, RATE_LIMITED, etc.
+  encryptedCredentials String    @db.Text
+  metadata             Json?
+  lastTestedAt         DateTime?
+  lastSuccessAt        DateTime?
+  lastErrorAt          DateTime?
+  lastErrorMessage     String?   @db.Text
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }
 
 // -----------------------------------------------------------------------------
@@ -133,14 +146,14 @@ model ApiConnection {
 model TrackedEntity {
   id         String   @id @default(cuid())
   userId     String
-  type       String   // KEYWORD, PRODUCT, COMPETITOR, DOMAIN, ASIN
+  type       String // KEYWORD, PRODUCT, COMPETITOR, DOMAIN, ASIN
   externalId String
-  source     String   // GOOGLE_ADS, DATAFORSEO_TRENDS, AMAZON, etc.
+  source     String // GOOGLE_ADS, DATAFORSEO_TRENDS, AMAZON, etc.
   status     String   @default("ACTIVE")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, type, externalId, source])
 }
@@ -149,30 +162,30 @@ model TrackedEntity {
 // NORMALIZED TREND DATA
 // -----------------------------------------------------------------------------
 model TrendSnapshot {
-  id         String   @id @default(cuid())
-  keywordId  String   // e.g., "running shoes"
-  source     String
-  date       DateTime @db.Date
-  value      Float
-  location   String?
-  region     String?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  keywordId String // e.g., "running shoes"
+  source    String
+  date      DateTime @db.Date
+  value     Float
+  location  String?
+  region    String?
+  createdAt DateTime @default(now())
 
   @@index([keywordId, source, date])
 }
 
 model KeywordMetric {
-  id            String   @id @default(cuid())
-  keyword       String
-  location      String?
-  language      String?
-  searchVolume  Int?
-  competition   String?  // HIGH, MEDIUM, LOW
-  cpc           Float?
-  source        String
-  period        String?
-  collectedAt   DateTime @default(now())
-  expiresAt     DateTime
+  id           String   @id @default(cuid())
+  keyword      String
+  location     String?
+  language     String?
+  searchVolume Int?
+  competition  String? // HIGH, MEDIUM, LOW
+  cpc          Float?
+  source       String
+  period       String?
+  collectedAt  DateTime @default(now())
+  expiresAt    DateTime
 
   @@index([keyword, location, language, source])
 }
@@ -194,69 +207,69 @@ model AmazonProduct {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  metrics     AmazonProductMetric[]
+  metrics AmazonProductMetric[]
 }
 
 model AmazonProductMetric {
-  id            String   @id @default(cuid())
-  productId     String
-  rank          Int?
-  keyword       String?
-  keywordRank   Int?
-  searchVolume  Int?
-  reviewCount   Int?
-  price         Float?
-  collectedAt   DateTime @default(now())
+  id           String   @id @default(cuid())
+  productId    String
+  rank         Int?
+  keyword      String?
+  keywordRank  Int?
+  searchVolume Int?
+  reviewCount  Int?
+  price        Float?
+  collectedAt  DateTime @default(now())
 
-  product       AmazonProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product AmazonProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 // -----------------------------------------------------------------------------
 // SHOPIFY DATA
 // -----------------------------------------------------------------------------
 model ShopifyStore {
-  id                   String   @id @default(cuid())
+  id                   String    @id @default(cuid())
   userId               String
-  shopDomain           String   @unique
+  shopDomain           String    @unique
   status               String
-  accessTokenEncrypted String   @db.Text
+  accessTokenEncrypted String    @db.Text
   scopes               String
-  installedAt          DateTime @default(now())
+  installedAt          DateTime  @default(now())
   lastSyncAt           DateTime?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  products             ShopifyProduct[]
-  salesSnapshots       ShopifySalesSnapshot[]
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products       ShopifyProduct[]
+  salesSnapshots ShopifySalesSnapshot[]
 }
 
 model ShopifyProduct {
-  id          String   @id @default(cuid())
-  storeId     String
-  externalId  String
-  title       String
-  handle      String
-  price       Float?
-  inventory   Int?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  storeId    String
+  externalId String
+  title      String
+  handle     String
+  price      Float?
+  inventory  Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  store       ShopifyStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  
+  store ShopifyStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
   @@unique([storeId, externalId])
 }
 
 model ShopifySalesSnapshot {
-  id          String   @id @default(cuid())
-  storeId     String
-  date        DateTime @db.Date
-  orders      Int
-  revenue     Float
-  unitsSold   Int
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  storeId   String
+  date      DateTime @db.Date
+  orders    Int
+  revenue   Float
+  unitsSold Int
+  createdAt DateTime @default(now())
 
-  store       ShopifyStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store ShopifyStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
 }
 
 // -----------------------------------------------------------------------------
@@ -278,12 +291,12 @@ model ApiUsageLog {
 }
 
 model AdminAuditLog {
-  id          String   @id @default(cuid())
-  action      String   // CREDENTIAL_ADDED, PROVIDER_CONNECTED, etc.
-  provider    String?
-  details     String?  @db.Text
-  adminId     String?  // The super admin executing the action
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  action    String // CREDENTIAL_ADDED, PROVIDER_CONNECTED, etc.
+  provider  String?
+  details   String?  @db.Text
+  adminId   String? // The super admin executing the action
+  createdAt DateTime @default(now())
 }
 
 // -----------------------------------------------------------------------------
@@ -294,11 +307,13 @@ model AdminAuditLog {
 model MarketKeyword {
   id          String   @id @default(cuid())
   keyword     String
-  platform    String   // SHOPEE, AMAZON, ENVATO
+  platform    String // SHOPEE, AMAZON, ENVATO
   lastUpdated DateTime @default(now())
-  
-  snapshots   MarketSnapshot[]
-  products    MarketProduct[]
+
+  snapshots MarketSnapshot[]
+  products  MarketProduct[]
+  alerts    MarketAlert[]
+  vocCache  VocAnalysisCache?
 
   @@unique([keyword, platform])
 }
@@ -308,9 +323,9 @@ model MarketSnapshot {
   id               String   @id @default(cuid())
   keywordId        String
   date             DateTime @db.Date // 2024-03-15
-  totalSearchVol   Int?     // Estimasi pencarian harian
-  avgPrice         Float    // Rata-rata harga pasar hari ini
-  totalMonthlySold Int      // Total barang terjual dari top 10 produk
+  totalSearchVol   Int? // Estimasi pencarian harian
+  avgPrice         Float // Rata-rata harga pasar hari ini
+  totalMonthlySold Int // Total barang terjual dari top 10 produk
 
   keyword MarketKeyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
 
@@ -321,7 +336,7 @@ model MarketSnapshot {
 model MarketProduct {
   id             String   @id @default(cuid())
   keywordId      String
-  externalId     String   // ID produk di Shopee/Amazon
+  externalId     String // ID produk di Shopee/Amazon
   title          String
   price          Float
   historicalSold Int
@@ -329,6 +344,132 @@ model MarketProduct {
   url            String?
   fetchedAt      DateTime @default(now())
 
+  observations   MarketProductObservation[]
   keyword MarketKeyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
 }
 
+// -----------------------------------------------------------------------------
+// ADVANCED MARKET INTELLIGENCE EXTENSIONS
+// -----------------------------------------------------------------------------
+
+// Menyimpan cache hasil Voice of Customer (VoC) Mining AI
+model VocAnalysisCache {
+  id             String   @id @default(cuid())
+  keywordId      String   @unique
+  platform       String
+  sentimentScore Int // 0 - 100
+  painPointsJson String   @db.Text // JSON: array of pain points with quotes & suggested actions
+  unmetNeedsJson String   @db.Text // JSON: array of unmet feature requests
+  positiveJson   String   @db.Text // JSON: positive praise highlights
+  analyzedAt     DateTime @default(now())
+
+  keyword MarketKeyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  @@unique([keywordId, platform])
+}
+
+// Menyimpan alert anomali otomatis (Price war, demand spike, competitor OOS)
+model MarketAlert {
+  id          String   @id @default(cuid())
+  keywordId   String
+  platform    String
+  type        String // "PRICE_WAR" | "DEMAND_SPIKE" | "COMPETITOR_OOS"
+  severity    String // "urgent" | "high" | "medium"
+  title       String
+  description String   @db.Text
+  actionText  String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  keyword MarketKeyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  @@index([keywordId, platform, createdAt])
+}
+
+// -----------------------------------------------------------------------------
+// TIKTOK TREND ANALYTICS
+// -----------------------------------------------------------------------------
+
+model TiktokTrend {
+  id                 String   @id @default(cuid())
+  keyword            String
+  totalViewsEstimate BigInt?
+  date               DateTime @db.Date // Untuk menyimpan riwayat harian
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  videos TiktokVideo[]
+
+  @@unique([keyword, date])
+  @@index([keyword])
+}
+
+model TiktokVideo {
+  id            String   @id @default(cuid())
+  trendId       String
+  videoId       String
+  authorName    String
+  description   String?  @db.Text
+  viewsCount    BigInt?
+  likesCount    BigInt?
+  sharesCount   BigInt?
+  commentsCount BigInt?
+  url           String
+  fetchedAt     DateTime @default(now())
+
+  trend TiktokTrend @relation(fields: [trendId], references: [id], onDelete: Cascade)
+
+  @@unique([trendId, videoId])
+}
+
+// -----------------------------------------------------------------------------
+// HISTORICAL OBSERVATIONS & OPPORTUNITY PIPELINE
+// -----------------------------------------------------------------------------
+
+model MarketProductObservation {
+  id             String        @id @default(cuid())
+  productId      String
+  price          Float
+  historicalSold Int?
+  monthlySold    Int?
+  rating         Float?
+  reviewCount    Int?
+  observedAt     DateTime      @default(now())
+
+  product        MarketProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, observedAt])
+}
+
+model SocialContentObservation {
+  id            String    @id @default(cuid())
+  platform      String    // "YOUTUBE" | "TIKTOK"
+  contentId     String    // Video external ID
+  title         String
+  channelTitle  String?
+  category      String?
+  publishedAt   DateTime?
+  viewsCount    BigInt?
+  likesCount    BigInt?
+  commentsCount BigInt?
+  observedAt    DateTime  @default(now())
+
+  @@index([platform, contentId, observedAt])
+  @@index([category, observedAt])
+}
+
+model MarketOpportunity {
+  id               String   @id @default(cuid())
+  title            String
+  category         String
+  targetCountry    String   @default("US")
+  opportunityScore Int      // 0-100
+  confidenceScore  Float    // 0.0 - 1.0
+  momentumSignal   String   // "STRONG_RISING" | "MODERATE_GROWTH" | "PLATEAU"
+  evidenceJson     Json     // { sources: string[], signals: any[], dataCoverage: string, missingData: string[] }
+  status           String   @default("ACTIVE") // ACTIVE | WATCHLIST | ARCHIVED
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([category, opportunityScore])
+}

@@ -23,8 +23,12 @@ export function PricingCard({
       </CardHeader>
       <CardContent>
         <p className="text-4xl font-semibold text-slate-950 dark:text-slate-50">{price}</p>
-        <p className="mt-1 text-sm text-slate-500">Placeholder monthly price</p>
-        <Button className="mt-6 w-full" variant={featured ? "accent" : "secondary"}>Select mock plan</Button>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          {name === "Pro Yearly" ? "Billed annually" : name === "Pro Monthly" ? "Billed monthly" : "Free forever"}
+        </p>
+        <Button className="mt-6 w-full" variant={featured ? "accent" : "secondary"}>
+          {name === "Basic" ? "Get Started" : "Subscribe Now"}
+        </Button>
         <ul className="mt-6 space-y-3 text-sm text-slate-700 dark:text-slate-300">
           {features.map((feature) => (
             <li key={feature} className="flex gap-2">

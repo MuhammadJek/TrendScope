@@ -21,19 +21,19 @@ export default function PricingPage() {
                 <thead className="text-slate-500">
                   <tr>
                     <th className="py-3">Capability</th>
-                    <th>Free</th>
-                    <th>Pro</th>
-                    <th>Business</th>
+                    <th>Basic</th>
+                    <th>Pro Monthly</th>
+                    <th>Pro Yearly</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {[
-                    ["Tracked Keywords", "5 limits", "100 limits", "Unlimited"],
-                    ["Tracked Products", "3 limits", "50 limits", "Unlimited"],
-                    ["Tracked Competitors", "1 limits", "20 limits", "Unlimited"],
-                    ["Data Refresh Interval", "Every 3 days", "Every 24 hours", "Real-Time / 1 hour"],
-                    ["Export Reports", "❌", "✅ Included", "✅ Included"],
-                    ["Priority API Support", "❌", "❌", "✅ Included"],
+                    ["Tracked Keywords", "3 limits", "Unlimited", "Unlimited"],
+                    ["Tracked Products", "1 limit", "50 limits", "200 limits"],
+                    ["Tracked Competitors", "1 limit", "20 limits", "200 limits"],
+                    ["Data Refresh", "Manual", "Real-Time", "Real-Time"],
+                    ["Export PDF/CSV", "—", "✅ Included", "✅ Included"],
+                    ["Priority API Support", "—", "—", "✅ Included"],
                   ].map((row) => (
                     <tr key={row[0]}>
                       {row.map((cell, idx) => (

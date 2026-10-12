@@ -76,20 +76,9 @@ export default async function Home() {
             <Link href="/pricing" className="hover:text-white">Pricing</Link>
           </nav>
           <div className="flex items-center gap-2">
-            {isAuthenticated ? (
-              <Button href="/dashboard" variant="secondary" size="sm">
-                Open dashboard
-              </Button>
-            ) : (
-              <>
-                <Button href="/login" variant="secondary" size="sm">
-                  Sign in
-                </Button>
-                <Button href="/register" size="sm">
-                  Get started
-                </Button>
-              </>
-            )}
+            <Button href="/dashboard" variant="secondary" size="sm">
+              Open Dashboard
+            </Button>
           </div>
         </header>
         <div className="relative z-10 mx-auto flex min-h-[calc(92vh-5rem)] max-w-7xl flex-col justify-center px-4 pb-20 pt-14 sm:px-6 lg:px-8">

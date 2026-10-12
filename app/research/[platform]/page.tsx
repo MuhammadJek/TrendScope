@@ -20,7 +20,11 @@ export default async function PlatformResearchPage({ params }: Props) {
   const resolvedParams = await params;
   const platform = resolvedParams.platform.toUpperCase();
   
-  if (!["SHOPEE", "AMAZON", "ENVATO", "ETSY"].includes(platform)) {
+  if (platform === "SHOPEE") {
+    redirect("/research/shopee");
+  }
+
+  if (!["AMAZON", "ENVATO", "ETSY", "EBAY"].includes(platform)) {
     redirect("/research/amazon");
   }
 

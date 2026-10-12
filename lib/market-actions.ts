@@ -5,10 +5,15 @@ import { revalidatePath } from "next/cache";
 import { searchShopee } from "@/lib/shopee-api";
 import { searchEnvato } from "@/lib/envato-api";
 import { searchEtsy } from "@/lib/etsy-api";
+import { EbayBrowseProvider } from "@/lib/providers/ebay-provider";
 
 export async function trackKeywordAction(keyword: string, platform: string) {
   if (!keyword || keyword.trim() === "") {
     return { error: "Kata kunci tidak boleh kosong." };
+  }
+
+  if (platform.toUpperCase() === "SHOPEE") {
+    return { error: "Fitur Shopee Analytics sedang dinonaktifkan sementara." };
   }
 
   const cleanKeyword = keyword.trim().toLowerCase();
@@ -341,6 +346,67 @@ export async function trackKeywordAction(keyword: string, platform: string) {
             avgPrice: avgPrice,
             totalMonthlySold: Math.floor(totalSoldEstimates / 12),
             totalSearchVol: etsyProducts.length,
+          },
+        });
+      }
+    } else if (platform === "EBAY") {
+      const ebayProvider = new EbayBrowseProvider();
+      const searchResult = await ebayProvider.search({ query: cleanKeyword, country: "US", limit: 30 });
+
+      if (searchResult.items.length > 0) {
+        await prisma.marketProduct.deleteMany({
+          where: { keywordId: marketKeyword.id },
+        });
+
+        let totalPrice = 0;
+        let validPriceCount = 0;
+        let totalSoldEstimates = 0;
+
+        const productInserts = searchResult.items.map((prod) => {
+          if (prod.price > 0) {
+            totalPrice += prod.price;
+            validPriceCount++;
+          }
+          const soldEst = (prod.reviewCount || 0) * 2;
+          totalSoldEstimates += soldEst;
+
+          return {
+            keywordId: marketKeyword.id,
+            externalId: prod.externalId,
+            title: prod.title.substring(0, 200),
+            price: prod.price,
+            historicalSold: soldEst,
+            monthlySold: Math.floor(soldEst / 12),
+            url: prod.originalUrl || "",
+          };
+        });
+
+        await prisma.marketProduct.createMany({
+          data: productInserts,
+        });
+
+        const avgPrice = validPriceCount > 0 ? totalPrice / validPriceCount : 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        await prisma.marketSnapshot.upsert({
+          where: {
+            keywordId_date: {
+              keywordId: marketKeyword.id,
+              date: today,
+            },
+          },
+          update: {
+            avgPrice: avgPrice,
+            totalMonthlySold: Math.floor(totalSoldEstimates / 12),
+            totalSearchVol: searchResult.totalResults,
+          },
+          create: {
+            keywordId: marketKeyword.id,
+            date: today,
+            avgPrice: avgPrice,
+            totalMonthlySold: Math.floor(totalSoldEstimates / 12),
+            totalSearchVol: searchResult.totalResults,
           },
         });
       }

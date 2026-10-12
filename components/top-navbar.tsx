@@ -42,26 +42,37 @@ export function TopNavbar({
           </p>
         </div>
         <div className="hidden min-w-0 flex-1 justify-center md:flex">
-          <Link
-            href="/products"
-            className="flex h-10 w-full max-w-lg items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const query = formData.get("query") as string;
+              if (query.trim()) {
+                window.location.href = `/research/tiktok/result/${encodeURIComponent(query.trim())}`;
+              }
+            }}
+            className="flex h-10 w-full max-w-lg items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 dark:border-slate-800 dark:bg-slate-900 transition-all"
           >
-            <Search className="h-4 w-4" aria-hidden="true" />
-            Search products, categories, or creators
-          </Link>
+            <Search className="h-4 w-4 text-slate-400" aria-hidden="true" />
+            <input
+              name="query"
+              type="search"
+              placeholder="Search trends, keywords, or creators..."
+              className="w-full bg-transparent border-none p-0 focus:outline-none focus:ring-0 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500"
+              autoComplete="off"
+            />
+          </form>
         </div>
         <div className="flex items-center gap-2">
           {user ? (
             <UserDropdown user={user} />
           ) : (
-            <>
-              <Button href="/login" variant="secondary" size="sm">
-                Sign in
-              </Button>
-              <Button href="/register" size="sm">
-                Get started
-              </Button>
-            </>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 transition"
+            >
+              <span>Dashboard</span>
+            </Link>
           )}
         </div>
       </div>

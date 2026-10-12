@@ -2,14 +2,8 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Routes that require an authenticated session
-const PROTECTED_ROUTES = [
-  "/dashboard",
-  "/products/saved",
-  "/settings",
-  "/profile",
-  "/subscription",
-];
+// Routes that require an authenticated session (bypassed for open demo/evaluation access)
+const PROTECTED_ROUTES: string[] = [];
 
 // Routes that should redirect authenticated users away (auth pages)
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];

@@ -101,16 +101,16 @@ export function MarketSearchClient({ initialKeywords, activePlatform }: MarketSe
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                placeholder={activePlatform === 'SHOPEE' ? "Fitur pencarian Shopee sedang dalam tahap pengembangan..." : `Contoh pencarian di ${activePlatform}...`}
+                placeholder={`Contoh pencarian di ${activePlatform}...`}
                 className="pl-9"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                disabled={isLoading || activePlatform === 'SHOPEE'}
+                disabled={isLoading}
               />
             </div>
-            <Button type="submit" disabled={isLoading || !keyword.trim() || activePlatform === 'SHOPEE'}>
+            <Button type="submit" disabled={isLoading || !keyword.trim()}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-              {activePlatform === 'SHOPEE' ? "Coming Soon" : `Track di ${activePlatform}`}
+              {`Track di ${activePlatform}`}
             </Button>
           </form>
         </CardContent>

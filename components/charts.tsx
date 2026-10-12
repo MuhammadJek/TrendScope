@@ -67,16 +67,37 @@ export function ProductRankingChart({ products }: { products: Product[] }) {
   const data = products
     .filter((product) => product.metricValue !== null)
     .slice(0, 6)
-    .map((product) => ({ name: product.title, value: product.metricValue ?? 0 }));
+    .map((product) => {
+      // Potong nama produk yang terlalu panjang agar tidak merusak UI grafik (maksimal 20 karakter)
+      const shortName = product.title.length > 20 ? product.title.slice(0, 20) + "..." : product.title;
+      return { 
+        name: shortName, 
+        fullName: product.title, // Simpan nama asli untuk tooltip
+        value: product.metricValue ?? 0 
+      };
+    });
+
+  // Custom tooltip agar menampilkan nama lengkap saat di-hover
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-slate-200 rounded-xl shadow-lg">
+          <p className="font-semibold text-slate-900 mb-1 max-w-xs">{payload[0].payload.fullName}</p>
+          <p className="text-teal-700 font-medium">Value: {payload[0].value}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <ClientChartFrame>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 32, bottom: 0 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 24, bottom: 0 }}>
           <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" horizontal={false} />
           <XAxis type="number" tick={{ fill: axisColor, fontSize: 12 }} tickLine={false} axisLine={false} />
-          <YAxis type="category" dataKey="name" width={96} tick={{ fill: axisColor, fontSize: 12 }} tickLine={false} axisLine={false} />
-          <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
+          <YAxis type="category" dataKey="name" width={110} tick={{ fill: axisColor, fontSize: 11 }} tickLine={false} axisLine={false} />
+          <Tooltip content={<CustomTooltip />} cursor={{fill: 'transparent'}} />
           <Bar dataKey="value" radius={[0, 8, 8, 0]} fill="#0f766e" />
         </BarChart>
       </ResponsiveContainer>
