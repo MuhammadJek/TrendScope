@@ -11,20 +11,27 @@ export async function getEvidenceBasedMarketInsights(params: {
   const { categories, country, timeRange, query } = params;
 
   try {
-    // 1. Fetch real products from database
-    const trackedKeywords = await prisma.marketKeyword.findMany({
-      include: {
-        products: {
-          take: 10,
-          orderBy: { historicalSold: "desc" },
+    // 1. Fetch real products from database with 3s timeout
+    const dbTimeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("INSIGHTS_DB_TIMEOUT")), 3000)
+    );
+
+    const trackedKeywords = await Promise.race([
+      prisma.marketKeyword.findMany({
+        include: {
+          products: {
+            take: 10,
+            orderBy: { historicalSold: "desc" },
+          },
+          snapshots: {
+            take: 2,
+            orderBy: { date: "desc" },
+          },
         },
-        snapshots: {
-          take: 2,
-          orderBy: { date: "desc" },
-        },
-      },
-      take: 8,
-    });
+        take: 8,
+      }),
+      dbTimeout,
+    ]);
 
     const insights: EvidenceBasedInsight[] = [];
 

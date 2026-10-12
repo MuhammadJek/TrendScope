@@ -57,29 +57,36 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   let latestSnapshot: any = null;
 
   try {
-    const [keywords, kwCount, prodCount, snapshot] = await Promise.all([
-      prisma.marketKeyword.findMany({
-        where: query
-          ? { keyword: { contains: query.toLowerCase() } }
-          : undefined,
-        include: {
-          products: { take: 30, orderBy: { historicalSold: "desc" } },
-          snapshots: { take: 14, orderBy: { date: "asc" } },
-        },
-        take: 10,
-      }),
-      prisma.marketKeyword.count(),
-      prisma.marketProduct.count(),
-      prisma.marketSnapshot.findFirst({
-        orderBy: { date: "desc" },
-      }),
-    ]);
+    const dbTimeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("DATABASE_QUERY_TIMEOUT")), 3000)
+    );
+
+    const [keywords, kwCount, prodCount, snapshot] = (await Promise.race([
+      Promise.all([
+        prisma.marketKeyword.findMany({
+          where: query
+            ? { keyword: { contains: query.toLowerCase() } }
+            : undefined,
+          include: {
+            products: { take: 30, orderBy: { historicalSold: "desc" } },
+            snapshots: { take: 14, orderBy: { date: "asc" } },
+          },
+          take: 10,
+        }),
+        prisma.marketKeyword.count(),
+        prisma.marketProduct.count(),
+        prisma.marketSnapshot.findFirst({
+          orderBy: { date: "desc" },
+        }),
+      ]),
+      dbTimeout,
+    ])) as any;
     trackedKeywords = keywords;
     totalKeywordsCount = kwCount;
     totalProductsCount = prodCount;
     latestSnapshot = snapshot;
   } catch (dbError) {
-    console.warn("Database query skipped or unconfigured on deployment:", dbError);
+    console.warn("Database query skipped or timed out on deployment:", dbError);
   }
 
   // Fetch social trends and insights with error safety

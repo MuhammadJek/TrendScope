@@ -33,7 +33,8 @@ export async function fetchTiktokData(keyword: string): Promise<TiktokTrendResul
         headers: {
           'x-rapidapi-key': apiKey,
           'x-rapidapi-host': 'tiktok-scraper7.p.rapidapi.com'
-        }
+        },
+        signal: AbortSignal.timeout(3500)
       };
 
       const res = await fetch(url, options);

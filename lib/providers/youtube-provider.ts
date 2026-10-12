@@ -20,7 +20,7 @@ export class YouTubeProvider {
   async searchYouTubeVideos(params: { query: string, regionCode: string, maxResults: number, order: string }) {
     const searchUrl = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=" + encodeURIComponent(params.query) + "&regionCode=" + params.regionCode + "&maxResults=" + params.maxResults + "&order=" + params.order + "&key=" + this.apiKey;
     
-    const searchRes = await fetch(searchUrl);
+    const searchRes = await fetch(searchUrl, { signal: AbortSignal.timeout(3500) });
     if (!searchRes.ok) {
       if (searchRes.status === 403) throw new YouTubeQuotaError();
       throw new YouTubeApiError("Search failed: " + searchRes.status);
@@ -43,7 +43,7 @@ export class YouTubeProvider {
     const videoIds = items.map((i: any) => i.id.videoId).join(",");
     const statsUrl = "https://www.googleapis.com/youtube/v3/videos?part=statistics,contentDetails&id=" + videoIds + "&key=" + this.apiKey;
     
-    const statsRes = await fetch(statsUrl);
+    const statsRes = await fetch(statsUrl, { signal: AbortSignal.timeout(3500) });
     if (!statsRes.ok) throw new YouTubeApiError("Stats failed: " + statsRes.status);
     const statsData = await statsRes.json();
 
