@@ -1,9 +1,0 @@
-2026/10/09-22:09:09.801 13ec Reusing MANIFEST C:\Users\dzakw\Documents\grafik-statik-data\grafik-data\trendscope-scraper\shopee_profile\Default\Local Storage\leveldb/MANIFEST-000001
-2026/10/09-22:09:09.804 13ec Recovering log #34
-2026/10/09-22:09:09.805 13ec Level-0 table #36: started
-2026/10/09-22:09:09.812 13ec Level-0 table #36: 24223 bytes OK
-2026/10/09-22:09:09.813 13ec Recovering log #35
-2026/10/09-22:09:09.817 13ec Reusing old log C:\Users\dzakw\Documents\grafik-statik-data\grafik-data\trendscope-scraper\shopee_profile\Default\Local Storage\leveldb/000035.log 
-2026/10/09-22:09:09.819 13ec Delete type=0 #34
-2026/10/09-22:09:17.595 13ec Level-0 table #38: started
-2026/10/09-22:09:17.624 13ec Level-0 table #38: 20123 bytes OK
