@@ -267,7 +267,7 @@ export function TopCompetitorsTable({ products, platform }: { products?: any[]; 
                 </td>
                 <td className="px-4 py-4">
                   <div className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700 border border-teal-100">
-                    {p.monthlySold > 0 ? `+${p.monthlySold.toLocaleString()} terjual/bln` : `${(p.sold || p.historicalSold).toLocaleString()} rating`}
+                    {p.monthlySold > 0 ? `+${p.monthlySold.toLocaleString()} terjual/bln` : `${(p.sold || p.historicalSold || 0).toLocaleString()} rating`}
                   </div>
                 </td>
                 <td className="px-4 py-4 text-xs text-slate-500" suppressHydrationWarning>

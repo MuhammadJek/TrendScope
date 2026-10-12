@@ -33,8 +33,13 @@ interface DashboardPageProps {
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const params = await searchParams;
-  const session = await auth();
-  const userPreferences = await getUserDashboardPreferences();
+  const session = await auth().catch(() => null);
+  const userPreferences = await getUserDashboardPreferences().catch(() => ({
+    country: "US",
+    categories: ["Fashion & Apparel", "Beauty & Personal Care"],
+    timeRange: "30d" as const,
+    searchQuery: "",
+  }));
 
   // Resolve filters with user preference fallback
   const country = typeof params.country === "string" ? params.country : userPreferences.country || "US";
@@ -44,40 +49,57 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const query = typeof params.q === "string" ? params.q.trim() : (typeof params.keyword === "string" ? params.keyword.trim() : "");
   const platform = typeof params.platform === "string" ? params.platform : "all";
 
-  // Fetch real database records and social media trends in parallel
-  const [trackedKeywords, totalKeywordsCount, totalProductsCount, latestSnapshot, socialContent, insights] = await Promise.all([
-    prisma.marketKeyword.findMany({
-      where: query
-        ? { keyword: { contains: query.toLowerCase() } }
-        : undefined,
-      include: {
-        products: { take: 30, orderBy: { historicalSold: "desc" } },
-        snapshots: { take: 14, orderBy: { date: "asc" } },
-      },
-      take: 10,
-    }),
-    prisma.marketKeyword.count(),
-    prisma.marketProduct.count(),
-    prisma.marketSnapshot.findFirst({
-      orderBy: { date: "desc" },
-    }),
+  // Fetch real database records with graceful fallback if DB is unconfigured on Vercel
+  let trackedKeywords: any[] = [];
+  let totalKeywordsCount = 0;
+  let totalProductsCount = 0;
+  let latestSnapshot: any = null;
+
+  try {
+    const [keywords, kwCount, prodCount, snapshot] = await Promise.all([
+      prisma.marketKeyword.findMany({
+        where: query
+          ? { keyword: { contains: query.toLowerCase() } }
+          : undefined,
+        include: {
+          products: { take: 30, orderBy: { historicalSold: "desc" } },
+          snapshots: { take: 14, orderBy: { date: "asc" } },
+        },
+        take: 10,
+      }),
+      prisma.marketKeyword.count(),
+      prisma.marketProduct.count(),
+      prisma.marketSnapshot.findFirst({
+        orderBy: { date: "desc" },
+      }),
+    ]);
+    trackedKeywords = keywords;
+    totalKeywordsCount = kwCount;
+    totalProductsCount = prodCount;
+    latestSnapshot = snapshot;
+  } catch (dbError) {
+    console.warn("Database query skipped or unconfigured on deployment:", dbError);
+  }
+
+  // Fetch social trends and insights with error safety
+  const [socialContent, insights] = await Promise.all([
     fetchSocialTrendsForCategories({
       categories,
       country,
       query,
-    }),
+    }).catch(() => []),
     getEvidenceBasedMarketInsights({
       categories,
       country,
       timeRange: range,
       query,
-    }),
+    }).catch(() => []),
   ]);
 
   // Aggregate real products from database
   let displayedProducts: any[] = [];
-  trackedKeywords.forEach((kw) => {
-    kw.products.forEach((p) => {
+  trackedKeywords.forEach((kw: any) => {
+    kw.products?.forEach((p: any) => {
       displayedProducts.push({
         ...p,
         platform: kw.platform,

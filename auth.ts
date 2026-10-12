@@ -73,5 +73,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
     error: "/login",
   },
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "trendscope-production-auth-secret-key-32chars-min-length",
   trustHost: true,
 });
