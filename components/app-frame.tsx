@@ -3,16 +3,31 @@ import { auth } from "@/auth";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopNavbar } from "@/components/top-navbar";
 
-export async function AppFrame({ children, title }: { children: ReactNode; title: string }) {
-  const session = await auth();
-  const user = session?.user
-    ? {
-        name: session.user.name,
-        email: session.user.email,
-        image: session.user.image,
-        role: (session.user as any).role,
-      }
-    : null;
+export async function AppFrame({
+  children,
+  title,
+  user: userProp,
+}: {
+  children: ReactNode;
+  title: string;
+  user?: { name?: string | null; email?: string | null; image?: string | null; role?: string } | null;
+}) {
+  let user = userProp ?? null;
+  if (user === undefined) {
+    try {
+      const session = await auth();
+      user = session?.user
+        ? {
+            name: session.user.name,
+            email: session.user.email,
+            image: session.user.image,
+            role: (session.user as any).role,
+          }
+        : null;
+    } catch {
+      user = null;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">

@@ -57,7 +57,7 @@ export function DashboardFilterBar({
     nextRange = range,
     nextQuery = query
   ) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams ? searchParams.toString() : "");
     params.set("country", nextCountry);
     params.set("range", nextRange);
     if (nextCategories.length > 0) {

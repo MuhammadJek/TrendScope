@@ -11,6 +11,7 @@ import {
   Globe,
   Info,
 } from "lucide-react";
+import { Suspense } from "react";
 import { AppFrame } from "@/components/app-frame";
 import { KpiCard } from "@/components/kpi-card";
 import { DashboardFilterBar } from "@/components/dashboard-filter-bar";
@@ -250,7 +251,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     : 85;
 
   return (
-    <AppFrame title="Market Intelligence Dashboard">
+    <AppFrame title="Market Intelligence Dashboard" user={session?.user ?? null}>
       <div className="space-y-8">
         {/* Header & Context */}
         <div className="flex flex-col gap-2">
@@ -272,13 +273,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </div>
 
         {/* Dashboard Filter & Personalization Bar */}
-        <DashboardFilterBar
-          initialCountry={country}
-          initialCategories={categories}
-          initialRange={range}
-          initialQuery={query}
-          isAuthenticated={!!session?.user}
-        />
+        <Suspense fallback={<div className="h-16 w-full animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-900" />}>
+          <DashboardFilterBar
+            initialCountry={country}
+            initialCategories={categories}
+            initialRange={range}
+            initialQuery={query}
+            isAuthenticated={!!session?.user}
+          />
+        </Suspense>
 
         {/* Data Honesty / Transparency Banner */}
         {hasRealTrackedData ? (
